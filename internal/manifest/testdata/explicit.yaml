@@ -1,0 +1,6 @@
+product:
+  name: MyAgent
+  version: 1.2.3
+  manufacturer: Acme
+  upgradeCode: "{11111111-2222-3333-4444-555555555555}"
+  productCode: auto

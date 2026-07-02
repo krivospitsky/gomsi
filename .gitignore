@@ -1,0 +1,26 @@
+# Binaries
+/bin/
+*.exe
+*.msi
+*.idt
+*.cab
+
+# Go build/test artifacts
+*.test
+*.out
+coverage.txt
+coverage.html
+
+# Go workspace
+go.work
+go.work.sum
+
+# Vendor (uncomment to ignore)
+# /vendor/
+
+# Editor / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db

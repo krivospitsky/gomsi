@@ -1,0 +1,37 @@
+product:
+  name: MyAgent
+  version: 1.2.3
+  manufacturer: Acme
+  upgradeCode: auto
+  productCode: auto
+
+install:
+  directory: MyAgent
+
+files:
+  - source: dist/myagent.exe
+    destination: myagent.exe
+
+service:
+  name: myagent
+  displayName: My Agent
+  description: Monitoring Agent
+  start: auto
+
+parameters:
+  serverUrl:
+    property: SERVERURL
+    type: string
+    title: Server URL
+    required: true
+    default: ""
+    validate: url
+    ui: auto
+  token:
+    property: TOKEN
+    type: password
+    required: false
+
+config:
+  template: installer/config.tpl
+  output: config.json
