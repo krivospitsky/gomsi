@@ -80,6 +80,10 @@ msibuild <package.msi> \
 
 `lcab` produces a standard MSCF cabinet from a list of files. Each file's internal name in the cab must match the `File` table's `File` column (short filename). Sequence numbers in the `Media` and `File` tables must correspond to CAB entry order.
 
+## Codepage
+
+The manifest accepts an optional top-level `codepage` field (integer). 0 (or absent) means auto-detect: CP1251 for Cyrillic text, CP1252 for Latin-1 supplement. Explicit values (1251, 1252) force the encoding for all IDT tables. Any string not representable in the selected codepage causes the build to fail.
+
 ## IDT file format
 
 Per [MS docs](https://learn.microsoft.com/en-us/windows/win32/msi/archive-file-format):
