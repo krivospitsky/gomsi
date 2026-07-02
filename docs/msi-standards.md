@@ -500,7 +500,7 @@ Key facts:
 - Sequence numbers in `File` table → offset within the cab
 - The `Folder` object in the cab is simple: a single folder covers all `File.Sequence` values ≤ `Folder.Offset`
 
-`lcab` creates standard MSCF cabinets with a single folder.
+`gcab` creates standard MSCF cabinets with a single folder.
 
 ## Component GUID lifecycle
 

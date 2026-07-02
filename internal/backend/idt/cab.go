@@ -9,19 +9,21 @@ import (
 	"github.com/krivospitsky/gomsi/internal/model"
 )
 
-// lcabArgs builds the command-line arguments for lcab. The staged files should
-// be basenames already matching the desired cab-internal names.
-func lcabArgs(stagedFiles []string, cabPath string) []string {
-	args := []string{"-n", "-q"}
-	args = append(args, stagedFiles...)
-	args = append(args, cabPath)
+// gcabArgs builds the command-line arguments for gcab. The staged files should
+// be full paths; only their basenames are passed as arguments so the cab-internal
+// name matches the Destination. The caller must set cmd.Dir to the staging root.
+func gcabArgs(stagedFiles []string, cabPath string) []string {
+	args := []string{"--create", cabPath}
+	for _, f := range stagedFiles {
+		args = append(args, filepath.Base(f))
+	}
 	return args
 }
 
 // genCAB creates a cabinet file containing the given payload files. Each file
 // is staged in a temporary directory under its Destination name so that the
 // cab-internal filename matches the File table's FileName column.
-// genCAB assumes lcab is available in PATH — the caller should check first.
+// genCAB assumes gcab is available in PATH — the caller should check first.
 func genCAB(cabPath string, files []model.File) error {
 	staging, err := os.MkdirTemp("", "gomsi-cab-*")
 	if err != nil {
@@ -42,15 +44,16 @@ func genCAB(cabPath string, files []model.File) error {
 		staged = append(staged, dst)
 	}
 
-	lcabPath, err := exec.LookPath("lcab")
+	gcabPath, err := exec.LookPath("gcab")
 	if err != nil {
-		return fmt.Errorf("lcab not found: %w", err)
+		return fmt.Errorf("gcab not found: %w", err)
 	}
 
-	args := lcabArgs(staged, cabPath)
-	cmd := exec.Command(lcabPath, args...)
+	args := gcabArgs(staged, cabPath)
+	cmd := exec.Command(gcabPath, args...)
+	cmd.Dir = staging
 	if out, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("lcab failed: %w\noutput:\n%s", err, out)
+		return fmt.Errorf("gcab failed: %w\noutput:\n%s", err, out)
 	}
 
 	return nil

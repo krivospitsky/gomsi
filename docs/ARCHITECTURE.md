@@ -13,7 +13,7 @@ gomsi build <manifest>
     │
     ▼
 [msibuild] (external)   .idt → import → MSI database
-[lcab]    (external)   payload → MSCF cabinet
+[gcab]    (external)   payload → MSCF cabinet
     │
     ▼
 .msi file
@@ -37,7 +37,7 @@ internal/
 │       ├── tables_upgrade.go ← Upgrade
 │       ├── tables_config.go  ← CustomAction, Binary
 │       ├── tables_ui.go      ← Dialog, Control, TextStyle, …
-│       ├── cab.go            ← lcab invocation
+│       ├── cab.go            ← gcab invocation
 │       ├── msibuild.go       ← msibuild invocation + summary info
 │       ├── vbscript.go       ← VBScript CA generation
 │       └── testdata/         ← golden IDT files, reference MSI
@@ -75,9 +75,9 @@ msibuild <package.msi> \
 - `-a` attaches a stream (the embedded CAB) with name matching `Media.Cabinet`.
 - `-s` sets summary stream: Subject, Author, Template (`;1033` = Intel;1033), Revision (package code = ProductCode).
 
-## CAB (lcab)
+## CAB (gcab)
 
-`lcab` produces a standard MSCF cabinet from a list of files. The IDT writer stages each file under its `Destination` name (via copy) before running lcab, so the cab-internal name matches the `File` table's `FileName` column. Sequence numbers in the `Media` and `File` tables correspond to CAB entry order.
+`gcab` produces a standard MSCF cabinet from a list of files. The IDT writer stages each file under its `Destination` name (via copy) before running gcab, so the cab-internal name matches the `File` table's `FileName` column. Sequence numbers in the `Media` and `File` tables correspond to CAB entry order.
 
 ## Codepage
 

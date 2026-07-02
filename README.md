@@ -28,7 +28,7 @@ sudo dpkg -i gomsi_*.deb
 sudo rpm -i gomsi_*.rpm
 ```
 
-The `msitools` and `lcab` dependencies are pulled automatically by the package manager.
+The `msitools` and `gcab` dependencies are pulled automatically by the package manager.
 
 ### Docker
 
@@ -39,7 +39,7 @@ docker run --rm -v "$PWD:/work" -w /work krivospitsky/gomsi build installer.yaml
 
 ### Development (`--emit`)
 
-If `msitools`/`lcab` are unavailable (e.g. Windows, macOS), use `--emit` to preview IDT+CAB output without building the final MSI:
+If `msitools`/`gcab` are unavailable (e.g. Windows, macOS), use `--emit` to preview IDT+CAB output without building the final MSI:
 
 ```sh
 gomsi build installer.yaml --emit out/
@@ -109,10 +109,10 @@ config:
 
 ## Backend
 
-MVP uses [`msitools`](https://wiki.gnome.org/msitools) + [`lcab`](https://github.com/riencroonenborghs/lcab): generate `.idt` files + CAB via `lcab`, then call `msibuild`. Dependencies (both Linux-only):
+MVP uses [`msitools`](https://wiki.gnome.org/msitools) + [`gcab`](https://wiki.gnome.org/msitools): generate `.idt` files + CAB via `gcab`, then call `msibuild`. Dependencies (both Linux-only):
 
 ```sh
-apt install msitools lcab
+apt install msitools gcab
 ```
 
 Future phases may switch to `libmsi` or a pure-Go MSI writer.

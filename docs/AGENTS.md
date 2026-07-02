@@ -4,11 +4,11 @@ Guidance for OpenCode agents working in this repository.
 
 ## Status
 
-Phases 2–7 of the IDT backend are complete. Phase 2 delivered core tables (Property, Directory, Component, Feature, FeatureComponents, File, Media, InstallExecuteSequence, InstallUISequence), CAB generation via lcab, msibuild invocation, and writer orchestration. Phase 3 adds ServiceInstall, ServiceControl, and augments InstallExecuteSequence with StopServices/DeleteServices/InstallServices. Phase 4 adds parameter Property rows and populates SecureCustomProperties. Phase 5 adds the Upgrade table, appends OLDPRODUCTSFOUND to SecureCustomProperties, and inserts FindRelatedProducts/RemoveExistingProducts into InstallExecuteSequence for automatic major-upgrade uninstall. Phase 6 adds VBScript CA generation (`vbscript.go`), the CustomAction + Binary tables (`tables_config.go`), resolves `config.template` in the CLI, and wires the VBScript sidecar into the writer for msibuild stream import. Phase 7 adds auto-UI: TextStyle, Dialog, Control, ControlEvent tables + Property/InstallUISequence augmentation, gated on visible parameters, text-only dialogs. The codepage+msibuild incompatibility has been fixed (row‑3 prefix dropped, `_ForceCodepage.idt` emitted). Phase 8 (CI + release) is the sole remaining phase. See [`TODO.md`](TODO.md) for details. The following resolved design decisions apply:
+Phases 2–7 of the IDT backend are complete. Phase 2 delivered core tables (Property, Directory, Component, Feature, FeatureComponents, File, Media, InstallExecuteSequence, InstallUISequence), CAB generation via gcab, msibuild invocation, and writer orchestration. Phase 3 adds ServiceInstall, ServiceControl, and augments InstallExecuteSequence with StopServices/DeleteServices/InstallServices. Phase 4 adds parameter Property rows and populates SecureCustomProperties. Phase 5 adds the Upgrade table, appends OLDPRODUCTSFOUND to SecureCustomProperties, and inserts FindRelatedProducts/RemoveExistingProducts into InstallExecuteSequence for automatic major-upgrade uninstall. Phase 6 adds VBScript CA generation (`vbscript.go`), the CustomAction + Binary tables (`tables_config.go`), resolves `config.template` in the CLI, and wires the VBScript sidecar into the writer for msibuild stream import. Phase 7 adds auto-UI: TextStyle, Dialog, Control, ControlEvent tables + Property/InstallUISequence augmentation, gated on visible parameters, text-only dialogs. The codepage+msibuild incompatibility has been fixed (row‑3 prefix dropped, `_ForceCodepage.idt` emitted). Phase 8 (CI + release) is the sole remaining phase. See [`TODO.md`](TODO.md) for details. The following resolved design decisions apply:
 
 | Decision | Choice |
 |----------|--------|
-| CAB generation | `lcab` (external, apt-installable) |
+| CAB generation | `gcab` (external, apt-installable) |
 | Config at install | VBScript CustomAction (sentinel substitution) |
 | UI scope | Auto-generated dialogs from parameters (included in MVP) |
 | Non-ASCII codepage | CP1251 (Cyrillic, Russian-first) / CP1252 (Latin) auto-detect; explicit `codepage` in manifest |
@@ -22,7 +22,7 @@ Resolved forks are recorded as design facts — do not revisit without reason.
 
 Hard constraints (do not violate without reason):
 - Host/build environment is Linux. No Windows SDK, no Wine, no CGO.
-- External deps: `msitools` (msibuild) + `lcab`. Both are Linux-only.
+- External deps: `msitools` (msibuild) + `gcab`. Both are Linux-only.
 - MVP backend is `msitools`: emit `.idt` files + CAB, then shell out to `msibuild`. Later phases may switch to `libmsi` or a pure-Go writer, but the internal `MSI` model must stay backend-agnostic — the code never touches IDT directly.
 - Manifest input is YAML/JSON; config rendering at install time uses an auto-generated VBScript CustomAction (the Go `config.Render` was a build-time helper; the VBScript CA is the actual install-time renderer).
 
@@ -39,7 +39,7 @@ Hard constraints (do not violate without reason):
   - `internal/backend/idt/tables_config.go` — CustomAction, Binary
   - `internal/backend/idt/tables_ui.go` — TextStyle, Dialog, Control, ControlEvent
   - `internal/backend/idt/tables_ui.go` — Dialog, Control, ControlCondition, ControlEvent, TextStyle
-  - `internal/backend/idt/cab.go` — `lcab` invocation
+  - `internal/backend/idt/cab.go` — `gcab` invocation
   - `internal/backend/idt/msibuild.go` — `msibuild` invocation + summary info
   - `internal/backend/idt/vbscript.go` — VBScript CA generation
   - `internal/backend/idt/writer.go` — orchestrator (tempdir → emit IDTs → CAB → msibuild → cleanup); `Writer.EmitDir` skips msibuild and copies outputs to a directory
@@ -82,7 +82,7 @@ go test ./internal/manifest
 go test ./internal/backend/idt
 ```
 
-Smoke-test the CLI end-to-end. On Windows (where msibuild/lcab are absent), use `--emit` to verify IDT output without the final msibuild step (CAB is skipped gracefully when lcab is missing); on Linux `--emit` produces both IDT files and the CAB:
+Smoke-test the CLI end-to-end. On Windows (where msibuild/gcab are absent), use `--emit` to verify IDT output without the final msibuild step (CAB is skipped gracefully when gcab is missing); on Linux `--emit` produces both IDT files and the CAB:
 
 ```
 go run ./cmd/gomsi build internal/manifest/testdata/installer.yaml --emit out/

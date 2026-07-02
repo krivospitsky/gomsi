@@ -10,9 +10,10 @@ import (
 	"github.com/krivospitsky/gomsi/internal/model"
 )
 
-func TestLcabArgs(t *testing.T) {
-	got := lcabArgs([]string{"a.txt", "b.bin"}, "out.cab")
-	want := []string{"-n", "-q", "a.txt", "b.bin", "out.cab"}
+func TestGcabArgs(t *testing.T) {
+	// Pass full paths; verify only basenames end up in the args.
+	got := gcabArgs([]string{"/tmp/a.txt", "/tmp/b.bin"}, "out.cab")
+	want := []string{"--create", "out.cab", "a.txt", "b.bin"}
 	if len(got) != len(want) {
 		t.Fatalf("len = %d, want %d", len(got), len(want))
 	}
@@ -23,9 +24,9 @@ func TestLcabArgs(t *testing.T) {
 	}
 }
 
-func TestLcabArgs_EmptyFiles(t *testing.T) {
-	got := lcabArgs(nil, "out.cab")
-	want := []string{"-n", "-q", "out.cab"}
+func TestGcabArgs_EmptyFiles(t *testing.T) {
+	got := gcabArgs(nil, "out.cab")
+	want := []string{"--create", "out.cab"}
 	if len(got) != len(want) {
 		t.Fatalf("len = %d, want %d", len(got), len(want))
 	}
@@ -37,11 +38,11 @@ func TestLcabArgs_EmptyFiles(t *testing.T) {
 }
 
 func TestGenCAB(t *testing.T) {
-	if _, err := exec.LookPath("lcab"); err != nil {
-		t.Skip("lcab not available:", err)
+	if _, err := exec.LookPath("gcab"); err != nil {
+		t.Skip("gcab not available:", err)
 	}
 	if runtime.GOOS == "windows" {
-		t.Skip("lcab is Linux-only")
+		t.Skip("gcab is Linux-only")
 	}
 
 	dir := t.TempDir()
@@ -90,11 +91,11 @@ func TestGenCAB_StagingNamesMatchDestination(t *testing.T) {
 	// source basename. We do this by using two sources with different
 	// filenames but the same destination basename would collide — instead
 	// just check that the staged copy worked by inspecting the staging dir.
-	if _, err := exec.LookPath("lcab"); err != nil {
-		t.Skip("lcab not available:", err)
+	if _, err := exec.LookPath("gcab"); err != nil {
+		t.Skip("gcab not available:", err)
 	}
 	if runtime.GOOS == "windows" {
-		t.Skip("lcab is Linux-only")
+		t.Skip("gcab is Linux-only")
 	}
 
 	dir := t.TempDir()
@@ -128,12 +129,12 @@ func TestGenCAB_StagingNamesMatchDestination(t *testing.T) {
 	t.Logf("CAB at %s, size %d bytes (contains file named 'myagent.exe')", cabPath, fi.Size())
 }
 
-func TestLcabArgs_Integration(t *testing.T) {
-	if _, err := exec.LookPath("lcab"); err != nil {
-		t.Skip("lcab not available:", err)
+func TestGcabArgs_Integration(t *testing.T) {
+	if _, err := exec.LookPath("gcab"); err != nil {
+		t.Skip("gcab not available:", err)
 	}
 	if runtime.GOOS == "windows" {
-		t.Skip("lcab is Linux-only")
+		t.Skip("gcab is Linux-only")
 	}
 
 	dir := t.TempDir()
@@ -156,11 +157,12 @@ func TestLcabArgs_Integration(t *testing.T) {
 	}
 
 	cabPath := filepath.Join(dir, "test.cab")
-	args := lcabArgs(paths, cabPath)
-	cmd := exec.Command("lcab", args...)
+	args := gcabArgs(paths, cabPath)
+	cmd := exec.Command("gcab", args...)
+	cmd.Dir = dir
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		t.Fatalf("lcab failed: %v\noutput: %s", err, out)
+		t.Fatalf("gcab failed: %v\noutput: %s", err, out)
 	}
 
 	fi, err := os.Stat(cabPath)
@@ -170,5 +172,5 @@ func TestLcabArgs_Integration(t *testing.T) {
 	if fi.Size() == 0 {
 		t.Fatal("CAB file is empty")
 	}
-	t.Logf("lcab produced %d-byte CAB at %s", fi.Size(), cabPath)
+	t.Logf("gcab produced %d-byte CAB at %s", fi.Size(), cabPath)
 }

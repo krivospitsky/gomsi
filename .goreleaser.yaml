@@ -38,7 +38,7 @@ nfpms:
     license: MIT
     dependencies:
       - msitools
-      - lcab
+      - gcab
     bindir: /usr/bin
     file_name_template: "{{ .ConventionalFileName }}"
 

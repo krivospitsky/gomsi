@@ -62,8 +62,8 @@ func TestWriter_Emit(t *testing.T) {
 		}
 	}
 
-	// CAB is emitted only when lcab is available (Linux).
-	if _, err := exec.LookPath("lcab"); err == nil {
+	// CAB is emitted only when gcab is available (Linux).
+	if _, err := exec.LookPath("gcab"); err == nil {
 		p := filepath.Join(emitDir, "gomsi.cab")
 		fi, err := os.Stat(p)
 		if err != nil {
@@ -270,11 +270,11 @@ func TestWriter_FullBuild(t *testing.T) {
 	if _, err := exec.LookPath("msibuild"); err != nil {
 		t.Skip("msibuild not available:", err)
 	}
-	if _, err := exec.LookPath("lcab"); err != nil {
-		t.Skip("lcab not available:", err)
+	if _, err := exec.LookPath("gcab"); err != nil {
+		t.Skip("gcab not available:", err)
 	}
 	if runtime.GOOS == "windows" {
-		t.Skip("msibuild/lcab are Linux-only")
+		t.Skip("msibuild/gcab are Linux-only")
 	}
 
 	dir := t.TempDir()
@@ -495,11 +495,11 @@ func TestWriter_FullBuild_WithConfig(t *testing.T) {
 	if _, err := exec.LookPath("msibuild"); err != nil {
 		t.Skip("msibuild not available:", err)
 	}
-	if _, err := exec.LookPath("lcab"); err != nil {
-		t.Skip("lcab not available:", err)
+	if _, err := exec.LookPath("gcab"); err != nil {
+		t.Skip("gcab not available:", err)
 	}
 	if runtime.GOOS == "windows" {
-		t.Skip("msibuild/lcab are Linux-only")
+		t.Skip("msibuild/gcab are Linux-only")
 	}
 
 	dir := t.TempDir()

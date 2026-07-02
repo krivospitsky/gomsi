@@ -12,9 +12,9 @@ import (
 
 // Writer implements backend.Writer using the msitools (IDT + CAB + msibuild) flow.
 //
-// If EmitDir is set, Write stops after emitting IDT files and (when lcab is
+// If EmitDir is set, Write stops after emitting IDT files and (when gcab is
 // available) the CAB into that directory, skipping the msibuild step. This is
-// useful for development on platforms without msitools/lcab (e.g. Windows).
+// useful for development on platforms without msitools/gcab (e.g. Windows).
 type Writer struct {
 	EmitDir string
 }
@@ -99,17 +99,17 @@ func (w *Writer) Write(m *model.MSI, outputPath string) error {
 		}
 	}
 
-	// Generate CAB when lcab is available. In emit mode, skip gracefully
-	// when lcab is absent (e.g. Windows dev).
+	// Generate CAB when gcab is available. In emit mode, skip gracefully
+	// when gcab is absent (e.g. Windows dev).
 	cabPath := ""
-	_, lcabErr := exec.LookPath("lcab")
-	if lcabErr == nil {
+	_, gcabErr := exec.LookPath("gcab")
+	if gcabErr == nil {
 		cabPath = filepath.Join(tempDir, "gomsi.cab")
 		if err := genCAB(cabPath, m.Files); err != nil {
 			return fmt.Errorf("generate CAB: %w", err)
 		}
 	} else if w.EmitDir == "" {
-		return fmt.Errorf("lcab not found: required for full MSI build: %w", lcabErr)
+		return fmt.Errorf("gcab not found: required for full MSI build: %w", gcabErr)
 	}
 
 	if w.EmitDir != "" {

@@ -18,12 +18,12 @@
   - `Media` — DiskId=1, LastSequence=`len(m.Files)`, Cabinet="gomsi.cab"
   - `InstallExecuteSequence` — MVP subset (11 actions, sequences 1–210)
   - `InstallUISequence` — CostInitialize, FileCost, CostFinalize, ExecuteAction
-- [x] `cab.go` — `genCAB(cabPath string, files []model.File) error` — copies sources to staging dir under `Destination` names, then `lcab -n -q`
+- [x] `cab.go` — `genCAB(cabPath string, files []model.File) error` — copies sources to staging dir under `Destination` names, then `gcab --create` (chdir to staging, pass basenames)
 - [x] `msibuild.go` — `runMSIBuild(msiPath, tablePaths, cabPath, product) error` — invokes `msibuild <msi> -i <table>.idt ... -a gomsi.cab <cab> -s <name> <mfr> ;1033 <code>`
-- [x] `writer.go` — orchestrates: stat pass → `coreTables()` → write IDTs → `genCAB()` → emit or `runMSIBuild()`; `EmitDir` field skips msibuild; tolerates missing lcab in emit mode (e.g. Windows)
+- [x] `writer.go` — orchestrates: stat pass → `coreTables()` → write IDTs → `genCAB()` → emit or `runMSIBuild()`; `EmitDir` field skips msibuild; tolerates missing gcab in emit mode (e.g. Windows)
 - [x] CLI `--emit <dir>` flag — stop after emitting IDT+CAB (skip msibuild), for Windows/CI dev
 - [x] Test: golden IDT per core table (`testdata/core/*.idt`)
-- [x] Test: lcab arg construction
+- [x] Test: gcab arg construction
 - [x] Test: msibuild arg construction
 - [x] Test: `writer.go` emit path (all platforms) + full build (Linux only)
 - [x] Integration: `go run ./cmd/gomsi build internal/manifest/testdata/installer.yaml --emit out/` (verified on Windows)
@@ -88,12 +88,12 @@
 
 - [x] `.goreleaser.yaml`
   - `builds`: `cmd/gomsi` → `gomsi`, `linux/amd64`, `goamd64: v1`
-  - `nfpms`: `.deb` + `.rpm` from one config — `package_name: gomsi`, vendor/maintainer/license from repo, `dependencies: [msitools, lcab]`, `bindir: /usr/bin`, `file_name_template: "{{ .ConventionalFileName }}"`
+  - `nfpms`: `.deb` + `.rpm` from one config — `package_name: gomsi`, vendor/maintainer/license from repo, `dependencies: [msitools, gcab]`, `bindir: /usr/bin`, `file_name_template: "{{ .ConventionalFileName }}"`
   - `dockers`: `dockerfile: Dockerfile`, `image_templates: ["krivospitsky/gomsi:{{ .Tag }}", "krivospitsky/gomsi:v{{ .Major }}", "krivospitsky/gomsi:v{{ .Major }}.{{ .Minor }}", "krivospitsky/gomsi:latest"]`, `use: docker`
   - `archives` + `checksum` (name_template `gomsi_{{ .Version }}_linux_amd64`); default GitHub Releases upload
-- [x] `Dockerfile` — `FROM debian:bookworm-slim`; `apt-get install -y --no-install-recommends msitools lcab ca-certificates`; `COPY gomsi /usr/bin/gomsi`; `ENTRYPOINT ["gomsi"]` (goreleaser drops the prebuilt binary into the build context)
+- [x] `Dockerfile` — `FROM debian:bookworm-slim`; `apt-get install -y --no-install-recommends msitools gcab ca-certificates`; `COPY gomsi /usr/bin/gomsi`; `ENTRYPOINT ["gomsi"]` (goreleaser drops the prebuilt binary into the build context)
 - [x] `.github/workflows/ci.yml` — on push (main) + PR:
-  - Linux (ubuntu-latest): `apt install msitools lcab`, `go build ./... && go vet ./... && go test ./...`, smoke `go run ./cmd/gomsi build internal/manifest/testdata/installer.yaml`
+  - Linux (ubuntu-latest): `apt install msitools gcab`, `go build ./... && go vet ./... && go test ./...`, smoke `go run ./cmd/gomsi build internal/manifest/testdata/installer.yaml`
   - Windows (windows-latest): `go build ./... && go vet ./... && go test ./...`, smoke `go run ./cmd/gomsi build ... --emit out/`
 - [x] `.github/workflows/release.yml` — on tag `v*`: `checkout` (fetch-depth 0), `setup-go` 1.25, `docker/login-action` → `docker.io` (`DOCKER_USERNAME`/`DOCKER_TOKEN` secrets), `goreleaser/goreleaser-action@v6` with `args: release --clean` + `GITHUB_TOKEN` → deb+rpm+archive+checksums to GitHub Release, `krivospitsky/gomsi` tags pushed to Docker Hub
-- [x] README.md — "Install" section: deb/rpm from GitHub Releases (`dpkg -i`/`rpm -i`, auto-pulls msitools+lcab), `docker pull krivospitsky/gomsi`, CI prerequisites + `--emit` dev workflow
+- [x] README.md — "Install" section: deb/rpm from GitHub Releases (`dpkg -i`/`rpm -i`, auto-pulls msitools+gcab), `docker pull krivospitsky/gomsi`, CI prerequisites + `--emit` dev workflow

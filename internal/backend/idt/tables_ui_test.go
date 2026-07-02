@@ -268,11 +268,11 @@ func TestWriter_FullBuild_WithUI(t *testing.T) {
 	if _, err := exec.LookPath("msibuild"); err != nil {
 		t.Skip("msibuild not available:", err)
 	}
-	if _, err := exec.LookPath("lcab"); err != nil {
-		t.Skip("lcab not available:", err)
+	if _, err := exec.LookPath("gcab"); err != nil {
+		t.Skip("gcab not available:", err)
 	}
 	if runtime.GOOS == "windows" {
-		t.Skip("msibuild/lcab are Linux-only")
+		t.Skip("msibuild/gcab are Linux-only")
 	}
 
 	dir := t.TempDir()

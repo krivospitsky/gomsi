@@ -6,10 +6,10 @@
 |---|---|---|
 | Go 1.25+ | always | [go.dev](https://go.dev/) |
 | [`msitools`](https://wiki.gnome.org/msitools) | real MSI build (Linux) | `apt install msitools` |
-| [`lcab`](https://packages.debian.org/lcab) | real CAB build (Linux) | `apt install lcab` |
+| [`gcab`](https://packages.debian.org/gcab) | real CAB build (Linux) | `apt install gcab` |
 
 
-> **Note**: msitools/lcab are **Linux-only**. On Windows (your dev box) the `--emit` flag lets you develop and test the IDT emitter without them.
+> **Note**: msitools/gcab are **Linux-only**. On Windows (your dev box) the `--emit` flag lets you develop and test the IDT emitter without them.
 
 ## Development workflow
 
@@ -20,7 +20,7 @@
    ```
    go test ./internal/backend/idt -v
    ```
-3. Use `--emit <dir>` to inspect the generated IDT files (and CAB, when lcab is available):
+3. Use `--emit <dir>` to inspect the generated IDT files (and CAB, when gcab is available):
    ```
    go run ./cmd/gomsi build internal/manifest/testdata/installer.yaml --emit out/
    ```
@@ -32,13 +32,13 @@
 
 ### Linux (full build, CI)
 
-Same workflow, but additionally `msibuild` + `lcab` are available:
+Same workflow, but additionally `msibuild` + `gcab` are available:
 
 1. Run all tests:
    ```
    go test ./...
    ```
-   Tests that require msibuild/lcab will execute on Linux and produce real `.msi` files.
+   Tests that require msibuild/gcab will execute on Linux and produce real `.msi` files.
 
 2. Build an MSI:
    ```
@@ -58,7 +58,7 @@ Same workflow, but additionally `msibuild` + `lcab` are available:
 |---|---|---|---|---|
 | Golden IDT (serializer) | `Table` struct → serialized `.idt` text | Windows + Linux | No |
 | Golden IDT (builders) | `model.MSI` → `[]Table` | Windows + Linux | No |
-| Arg construction | Command-line args for lcab/msibuild | Windows + Linux | No |
+| Arg construction | Command-line args for gcab/msibuild | Windows + Linux | No |
 | Writer orchestration (emit) | Tempdir, IDT emission, CAB gen (optional) | Windows + Linux | No |
 | Writer orchestration (build) | Full Write → msibuild call | Linux only | Yes |
 | End-to-end | Full `go run ./cmd/gomsi build --emit` | Windows + Linux | No |
