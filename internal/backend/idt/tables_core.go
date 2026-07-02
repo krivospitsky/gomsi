@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"strings"
 
 	"github.com/krivospitsky/gomsi/internal/model"
 )
@@ -47,7 +48,24 @@ func buildProperty(m *model.MSI) *Table {
 	if m.Product.UpgradeCode != "" {
 		addProp("UpgradeCode", m.Product.UpgradeCode)
 	}
-	addProp("SecureCustomProperties", "")
+
+	// Phase 4: emit a Property row per parameter so each maps to an MSI
+	// public property settable via msiexec SERVERURL=... or the UI.
+	// Required parameters are best-effort in MVP — no client-side
+	// enforcement; the default value (possibly empty) is used as-is.
+	secureProps := make([]string, 0, len(m.Parameters))
+	for _, p := range m.Parameters {
+		if p.Property == "" {
+			continue
+		}
+		addProp(p.Property, p.Default)
+		secureProps = append(secureProps, p.Property)
+	}
+
+	// SecureCustomProperties tells the installer which public properties
+	// to pass to the deferred/machine context (e.g. for VBScript CAs).
+	// Future phases (upgrade) may append to this list.
+	addProp("SecureCustomProperties", strings.Join(secureProps, ";"))
 
 	return tbl
 }

@@ -107,7 +107,7 @@ Properties are global key-value pairs. Naming conventions:
 | Private (mixed/lowercase) | `CustomActionData` | Not settable from command line |
 | Secure | `SECURE_PROP` | Survives into deferred/execute sequence |
 
-**SecureCustomProperties** — a list property (comma-separated property names) that tells the installer which public properties to pass to the execution phase (where they become available to deferred CAs and VBScript via `CustomActionData`). Any property accessed by a deferred CA must be listed here.
+**SecureCustomProperties** — a list property (semicolon-separated property names) that tells the installer which public properties to pass to the execution phase (where they become available to deferred CAs and VBScript via `CustomActionData`). Any property accessed by a deferred CA must be listed here.
 
 ## Table reference (MVP)
 

@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/krivospitsky/gomsi/internal/model"
@@ -143,6 +144,55 @@ func TestWriter_Emit_WithService(t *testing.T) {
 	// col types (line2), PK (line3), then 14 data rows = 17 total lines.
 	if lines != 17 {
 		t.Errorf("InstallExecuteSequence.idt: got %d lines, want 17 (3 header + 14 data)", lines)
+	}
+}
+
+func TestWriter_Emit_WithParameters(t *testing.T) {
+	dir := t.TempDir()
+
+	payload := filepath.Join(dir, "myagent.exe")
+	if err := os.WriteFile(payload, []byte("fake exe content"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	emitDir := filepath.Join(dir, "emit")
+	m := &model.MSI{
+		Product: model.Product{
+			Name:         "TestApp",
+			Version:      "2.0.0",
+			Manufacturer: "TestCorp",
+			UpgradeCode:  "{aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa}",
+			ProductCode:  "{bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb}",
+		},
+		Install: model.Install{Directory: "TestApp"},
+		Files: []model.File{
+			{Source: payload, Destination: "myagent.exe"},
+		},
+		Parameters: []model.Parameter{
+			{Name: "serverUrl", Property: "SERVERURL", Default: ""},
+			{Name: "token", Property: "TOKEN", Default: "s3cr3t"},
+		},
+	}
+
+	w := &Writer{EmitDir: emitDir}
+	if err := w.Write(m, "out.msi"); err != nil {
+		t.Fatal(err)
+	}
+
+	// Verify Property.idt contains the parameter rows and SecureCustomProperties.
+	propData, err := os.ReadFile(filepath.Join(emitDir, "Property.idt"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	propStr := string(propData)
+	if !strings.Contains(propStr, "SERVERURL\t") {
+		t.Error("Property.idt missing SERVERURL row")
+	}
+	if !strings.Contains(propStr, "TOKEN\ts3cr3t") {
+		t.Error("Property.idt missing TOKEN row with default")
+	}
+	if !strings.Contains(propStr, "SecureCustomProperties\tSERVERURL;TOKEN") {
+		t.Error("Property.idt missing or incorrect SecureCustomProperties row")
 	}
 }
 

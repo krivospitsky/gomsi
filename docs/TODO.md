@@ -39,10 +39,10 @@
 
 ## Phase 4 — Parameters as public properties
 
-- [ ] `Property` rows: one per `model.Parameter` with `Property.Name`, default via `Value`
+- [x] `Property` rows: one per `model.Parameter` with `Property.Name`, default via `Value`
   - Required parameters → note best-effort (no client-side enforcement in MVP)
-- [ ] `SecureCustomProperties` — list all parameter properties so they're available in deferred/machine context
-- [ ] Tests: golden IDT for parameter properties
+- [x] `SecureCustomProperties` — list all parameter properties so they're available in deferred/machine context
+- [x] Tests: golden IDT for parameter properties
 
 ## Phase 5 — Major upgrade / auto-uninstall
 
