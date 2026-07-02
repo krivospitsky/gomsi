@@ -84,8 +84,16 @@
   - `InstallUISequence` — WelcomeDlg (50), ExecuteAction (1299), ExitDlg (1300) via `applyUISequence`
 - [x] Tests: golden IDT per table group; unit tests for hasVisibleParam, applyUIProperties, applyUISequence; writer emit + full‑build (Linux) tests
 
-## Phase 8 — CI + docs
+## Phase 8 — CI + release
 
-- [ ] Linux CI script (`.gitlab-ci.yml` or GitHub Actions) — install msitools + lcab, run full test suite, build reference MSI
-- [ ] Update README.md with lcab/msitools prerequisites and `--emit` dev workflow
-- [ ] Verify `go build ./... && go vet ./... && go test ./...` pass on both Windows (--emit) and Linux (full build)
+- [x] `.goreleaser.yaml`
+  - `builds`: `cmd/gomsi` → `gomsi`, `linux/amd64`, `goamd64: v1`
+  - `nfpms`: `.deb` + `.rpm` from one config — `package_name: gomsi`, vendor/maintainer/license from repo, `dependencies: [msitools, lcab]`, `bindir: /usr/bin`, `file_name_template: "{{ .ConventionalFileName }}"`
+  - `dockers`: `dockerfile: Dockerfile`, `image_templates: ["krivospitsky/gomsi:{{ .Tag }}", "krivospitsky/gomsi:v{{ .Major }}", "krivospitsky/gomsi:v{{ .Major }}.{{ .Minor }}", "krivospitsky/gomsi:latest"]`, `use: docker`
+  - `archives` + `checksum` (name_template `gomsi_{{ .Version }}_linux_amd64`); default GitHub Releases upload
+- [x] `Dockerfile` — `FROM debian:bookworm-slim`; `apt-get install -y --no-install-recommends msitools lcab ca-certificates`; `COPY gomsi /usr/bin/gomsi`; `ENTRYPOINT ["gomsi"]` (goreleaser drops the prebuilt binary into the build context)
+- [x] `.github/workflows/ci.yml` — on push (main) + PR:
+  - Linux (ubuntu-latest): `apt install msitools lcab`, `go build ./... && go vet ./... && go test ./...`, smoke `go run ./cmd/gomsi build internal/manifest/testdata/installer.yaml`
+  - Windows (windows-latest): `go build ./... && go vet ./... && go test ./...`, smoke `go run ./cmd/gomsi build ... --emit out/`
+- [x] `.github/workflows/release.yml` — on tag `v*`: `checkout` (fetch-depth 0), `setup-go` 1.25, `docker/login-action` → `docker.io` (`DOCKER_USERNAME`/`DOCKER_TOKEN` secrets), `goreleaser/goreleaser-action@v6` with `args: release --clean` + `GITHUB_TOKEN` → deb+rpm+archive+checksums to GitHub Release, `krivospitsky/gomsi` tags pushed to Docker Hub
+- [x] README.md — "Install" section: deb/rpm from GitHub Releases (`dpkg -i`/`rpm -i`, auto-pulls msitools+lcab), `docker pull krivospitsky/gomsi`, CI prerequisites + `--emit` dev workflow

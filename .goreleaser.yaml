@@ -1,0 +1,83 @@
+version: 2
+
+project_name: gomsi
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: gomsi
+    main: ./cmd/gomsi
+    binary: gomsi
+    goos:
+      - linux
+    goarch:
+      - amd64
+    goamd64:
+      - v1
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+
+nfpms:
+  - id: gomsi
+    package_name: gomsi
+    builds:
+      - gomsi
+    formats:
+      - deb
+      - rpm
+    vendor: "Gomsi contributors"
+    homepage: https://github.com/krivospitsky/gomsi
+    maintainer: "Alexandr Krivospitsky <alex@krivospitsky.ru>"
+    description: |-
+      Linux-first MSI package generator for Go applications.
+      Builds Windows MSI installers for Go binaries on Linux without the Windows SDK.
+    license: MIT
+    dependencies:
+      - msitools
+      - lcab
+    bindir: /usr/bin
+    file_name_template: "{{ .ConventionalFileName }}"
+
+dockers:
+  - id: gomsi
+    dockerfile: Dockerfile
+    image_templates:
+      - "krivospitsky/gomsi:{{ .Tag }}"
+      - "krivospitsky/gomsi:v{{ .Major }}"
+      - "krivospitsky/gomsi:v{{ .Major }}.{{ .Minor }}"
+      - "krivospitsky/gomsi:latest"
+    use: docker
+    build_flag_templates:
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.name={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
+
+archives:
+  - id: gomsi
+    builds:
+      - gomsi
+    name_template: "gomsi_{{ .Version }}_linux_amd64"
+    formats:
+      - tar.gz
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - Merge pull request
+      - Merge branch
