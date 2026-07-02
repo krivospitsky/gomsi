@@ -39,6 +39,9 @@ type Install struct {
 type File struct {
 	Source      string
 	Destination string
+	// Size is the file size in bytes. Filled by the writer via a stat pass;
+	// zero means unstated (caller or default).
+	Size int64
 }
 
 // Service describes a Windows service registered by the package.

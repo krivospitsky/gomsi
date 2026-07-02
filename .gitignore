@@ -3,7 +3,7 @@
 *.exe
 *.msi
 *.idt
-!**/testdata/*.idt
+!**/testdata/**/*.idt
 *.cab
 
 # Go build/test artifacts

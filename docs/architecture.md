@@ -78,7 +78,7 @@ msibuild <package.msi> \
 
 ## CAB (lcab)
 
-`lcab` produces a standard MSCF cabinet from a list of files. Each file's internal name in the cab must match the `File` table's `File` column (short filename). Sequence numbers in the `Media` and `File` tables must correspond to CAB entry order.
+`lcab` produces a standard MSCF cabinet from a list of files. The IDT writer stages each file under its `Destination` name (via copy) before running lcab, so the cab-internal name matches the `File` table's `FileName` column. Sequence numbers in the `Media` and `File` tables correspond to CAB entry order.
 
 ## Codepage
 
@@ -150,7 +150,7 @@ Rules:
 
 ## Deterministic builds
 
-Component GUIDs are derived deterministically (product name + component identity hash) to satisfy the deterministic-build principle. Product and upgrade codes are still randomly generated—this is flagged for a future fix.
+Component GUIDs are derived deterministically (sha256 of `ProductName|C_<Destination>`, formatted as a v4-ish braced GUID). Product and upgrade codes are still randomly generated at parse time — this is flagged for a future fix. See `deterministicGUID()` in `tables_core.go`.
 
 ## See also
 

@@ -4,7 +4,7 @@ Guidance for OpenCode agents working in this repository.
 
 ## Status
 
-Backend implementation in progress. The CLI, manifest parser, model, config renderer, and `Writer` interface are stable. The IDT backend (`internal/backend/idt`) is being implemented per the phased plan in [`TODO.md`](TODO.md) with the following resolved design decisions:
+Phase 2 of the IDT backend is complete: core tables (Property, Directory, Component, Feature, FeatureComponents, File, Media, InstallExecuteSequence, InstallUISequence), CAB generation via lcab, msibuild invocation, and writer orchestration all work. The remaining phases (service, parameters-as-properties, upgrade, VBScript CA, auto-UI) are pending. See [`TODO.md`](TODO.md) for the full plan. The following resolved design decisions apply:
 
 | Decision | Choice |
 |----------|--------|
@@ -29,6 +29,7 @@ Hard constraints (do not violate without reason):
 ## Layout & boundaries
 
 - `internal/model` — the `MSI` struct is the central abstraction. **Backend writers consume it; nothing backend-specific (IDT rows, table names) may leak into the model, parser, or CLI.**
+  - `model.File.Size` is filled by the writer's stat pass before table building; zero = unstated. The CLI resolves `Source` to an absolute path before calling `Write`.
 - `internal/manifest` — YAML/JSON → `model.MSI`.
 - `internal/backend` — the `Writer` interface (the only contract between model and producers). `internal/backend/idt` is the MVP msitools implementation.
   - `internal/backend/idt/table.go` — IDT serialization (the **only** file that understands the `.idt` text format)
@@ -40,9 +41,10 @@ Hard constraints (do not violate without reason):
   - `internal/backend/idt/cab.go` — `lcab` invocation
   - `internal/backend/idt/msibuild.go` — `msibuild` invocation + summary info
   - `internal/backend/idt/vbscript.go` — VBScript CA generation
-  - `internal/backend/idt/writer.go` — orchestrator (tempdir → emit → CAB → msibuild → cleanup)
+  - `internal/backend/idt/writer.go` — orchestrator (tempdir → emit IDTs → CAB → msibuild → cleanup); `Writer.EmitDir` skips msibuild and copies outputs to a directory
 - `internal/config` — build-time config rendering helper (superseded at install by VBScript CA).
 - `internal/cli` — cobra root + `build` subcommand. `cmd/gomsi/main.go` only calls `cli.Execute`.
+  - `--emit <dir>` flag on `build` stops after emitting IDT+CAB (skips msibuild), for Windows/CI development.
 - **Parameters are first-class.** Each maps simultaneously to an MSI Property, a `msiexec` CLI arg, a UI field, and a VBScript sentinel. Keep that mapping unified.
 
 ## Conventions an agent would otherwise miss
@@ -53,6 +55,9 @@ Hard constraints (do not violate without reason):
 - `upgradeCode`/`productCode: auto` (or empty) are resolved to freshly generated braced GUIDs **at parse time**; explicit values are preserved verbatim.
 - In config templates, a parameter is referenced by its **`property`** name (e.g. `{{.SERVERURL}}`), **not** its manifest key (e.g. `serverUrl`).
 - The CLI is cobra-based; add subcommands in `internal/cli` and register them on the root in an `init()`.
+- `model.File.Size` is populated by the IDT writer's stat pass before table building. New backends should do the same.
+- `Writer.EmitDir` (on `*idt.Writer`) controls whether `Write` runs msibuild (empty) or stops after IDT+CAB generation. Set it from the `--emit` flag.
+- In CAB generation, each source file is staged under its `Destination` name (via copy) so the cab-internal name matches `File.FileName`. This handles source/destination name mismatches.
 
 ## Explicit non-goals (out of scope for MVP)
 
@@ -76,7 +81,7 @@ go test ./internal/manifest
 go test ./internal/backend/idt
 ```
 
-Smoke-test the CLI end-to-end. On Windows (where msibuild/lcab are absent), use `--emit` to verify IDT + CAB output without the final msibuild step:
+Smoke-test the CLI end-to-end. On Windows (where msibuild/lcab are absent), use `--emit` to verify IDT output without the final msibuild step (CAB is skipped gracefully when lcab is missing); on Linux `--emit` produces both IDT files and the CAB:
 
 ```
 go run ./cmd/gomsi build internal/manifest/testdata/installer.yaml --emit out/

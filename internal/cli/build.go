@@ -6,13 +6,15 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/krivospitsky/gomsi/internal/backend"
 	"github.com/krivospitsky/gomsi/internal/backend/idt"
 	"github.com/krivospitsky/gomsi/internal/manifest"
 )
 
 // outputFlag is bound to the build command's -o flag.
 var outputFlag string
+
+// emitFlag is bound to the build command's --emit flag.
+var emitFlag string
 
 // buildCmd is the "gomsi build" subcommand.
 var buildCmd = &cobra.Command{
@@ -25,6 +27,14 @@ var buildCmd = &cobra.Command{
 		m, err := manifest.Parse(args[0])
 		if err != nil {
 			return err
+		}
+
+		// Resolve file sources relative to the manifest file's directory.
+		manifestDir := filepath.Dir(args[0])
+		for i := range m.Files {
+			if !filepath.IsAbs(m.Files[i].Source) {
+				m.Files[i].Source = filepath.Join(manifestDir, m.Files[i].Source)
+			}
 		}
 
 		outPath := outputFlag
@@ -43,17 +53,24 @@ var buildCmd = &cobra.Command{
 			outPath = abs
 		}
 
-		var w backend.Writer = idt.New()
+		w := idt.New()
+		w.EmitDir = emitFlag
+
 		if err := w.Write(m, outPath); err != nil {
 			return err
 		}
 
-		fmt.Fprintf(cmd.OutOrStdout(), "wrote %s\n", outPath)
+		if emitFlag != "" {
+			fmt.Fprintf(cmd.OutOrStdout(), "emitted IDT + CAB to %s\n", emitFlag)
+		} else {
+			fmt.Fprintf(cmd.OutOrStdout(), "wrote %s\n", outPath)
+		}
 		return nil
 	},
 }
 
 func init() {
 	buildCmd.Flags().StringVarP(&outputFlag, "output", "o", "", "output MSI path (defaults to <name>-<version>.msi)")
+	buildCmd.Flags().StringVarP(&emitFlag, "emit", "", "", "stop after emitting IDT + CAB to the given directory (skip msibuild)")
 	rootCmd.AddCommand(buildCmd)
 }

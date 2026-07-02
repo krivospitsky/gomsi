@@ -1,0 +1,4 @@
+Component	ComponentId	Directory_	Attributes	Condition	KeyPath
+s72	S38	S72	i2	S255	S72
+Component	Component
+C_myagent.exe	{50ce5004-b7e6-4eb9-a458-3402d0a54bfd}	INSTALLDIR	0		F_myagent.exe

@@ -1,0 +1,7 @@
+Action	Condition	Sequence
+s72	S255	i2
+InstallUISequence	Action
+CostInitialize		1
+FileCost		2
+CostFinalize		3
+ExecuteAction		4

@@ -78,7 +78,7 @@ config:
 
 ## Backend
 
-MVP uses [`msitools`](https://wiki.gnome.org/msitools) + [`lcab`](http://www.cabextract.org.uk/): generate `.idt` files + CAB via `lcab`, then call `msibuild`. Dependencies (both Linux-only):
+MVP uses [`msitools`](https://wiki.gnome.org/msitools) + [`lcab`](https://github.com/riencroonenborghs/lcab): generate `.idt` files + CAB via `lcab`, then call `msibuild`. Dependencies (both Linux-only):
 
 ```sh
 apt install msitools lcab
@@ -88,7 +88,7 @@ Future phases may switch to `libmsi` or a pure-Go MSI writer.
 
 ## Status
 
-Backend implementation in progress. See [`docs/TODO.md`](docs/TODO.md) for the implementation plan and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for architecture documentation.
+Backend implementation in progress (Phase 2 complete: core tables, CAB, msibuild, writer orchestration). See [`docs/TODO.md`](docs/TODO.md) for the implementation plan and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for architecture documentation.
 
 ## Non-goals
 

@@ -20,11 +20,11 @@
    ```
    go test ./internal/backend/idt -v
    ```
-3. Use `--emit <dir>` to inspect the generated IDT files and CAB:
+3. Use `--emit <dir>` to inspect the generated IDT files (and CAB, when lcab is available):
    ```
    go run ./cmd/gomsi build internal/manifest/testdata/installer.yaml --emit out/
    ```
-   This writes all `.idt` files + cab to `out/` without calling msibuild. Inspect the IDT files and diff them with golden files.
+   This writes all `.idt` files to `out/` without calling msibuild. On Linux the CAB is also emitted; on Windows it's skipped gracefully. Inspect the IDT files and diff them with golden files (`testdata/*.idt` and `testdata/core/*.idt`).
 4. Run the full Go suite:
    ```
    go build ./... && go vet ./... && go test ./...
@@ -55,12 +55,13 @@ Same workflow, but additionally `msibuild` + `lcab` are available:
 ## Testing strategy
 
 | Test type | What it covers | Where it runs | Requires msibuild? |
-|---|---|---|---|
-| Golden IDT | Table struct → serialized `.idt` text | Windows + Linux | No |
+|---|---|---|---|---|
+| Golden IDT (serializer) | `Table` struct → serialized `.idt` text | Windows + Linux | No |
+| Golden IDT (builders) | `model.MSI` → `[]Table` | Windows + Linux | No |
 | Arg construction | Command-line args for lcab/msibuild | Windows + Linux | No |
-| Table builders | `model.MSI` → `[]Table` | Windows + Linux | No |
-| Writer orchestration | Tempdir, IDT emission, CAB gen, msibuild call | Linux only | Yes |
-| End-to-end | Full `gomsi build` → valid `.msi` | Linux only | Yes |
+| Writer orchestration (emit) | Tempdir, IDT emission, CAB gen (optional) | Windows + Linux | No |
+| Writer orchestration (build) | Full Write → msibuild call | Linux only | Yes |
+| End-to-end | Full `go run ./cmd/gomsi build --emit` | Windows + Linux | No |
 
 ## Smoke test
 
@@ -80,7 +81,7 @@ go run ./cmd/gomsi build internal/manifest/testdata/installer.yaml
 - Model stays backend-agnostic — no IDT column names, no table references, no MSI-specific structs leak into `internal/model`.
 - Parameter property names (uppercase) are the canonical identifier everywhere: MSI properties, `msiexec` CLI args, VBScript sentinels, config skeleton substitution.
 - Codepage flows from manifest → `model.MSI.CodePage` → IDT table `CodePage` field. The IDT emitter auto-detects CP1251 (Cyrillic) or CP1252 (Latin) when CodePage is 0; explicit 1251/1252 forces the codepage. Test both codepaths with inline and golden tests.
-- Golden IDT files use `.idt` extension and are committed to `testdata/`.
+- Golden IDT files use `.idt` extension and are committed under `testdata/`. Phase-2 core-table golden files are in `testdata/core/`.
 
 ## VBScript CA debug
 

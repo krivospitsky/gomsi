@@ -1,0 +1,4 @@
+DiskId	LastSequence	DiskPrompt	Cabinet	VolumeLabel
+i2	i2	S64	S255	S32
+Media	DiskId
+1	1		gomsi.cab	

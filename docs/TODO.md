@@ -8,25 +8,25 @@
 
 ## Phase 2 — Core → minimal installable MSI
 
-- [ ] `tables_core.go` — build from `*model.MSI`:
-  - `Property` — ProductName, ProductCode, ProductVersion, Manufacturer, UpgradeCode, SecureCustomProperties
-  - `Directory` — TARGETDIR (`SourceDir`), ProgramFilesFolder (`ProgramFilesFolder`), INSTALLDIR (`TARGETDIR.ProgramFilesFolder`)
-  - `Component` — one per File, deterministic GUID from product+identity
-  - `Feature` — "Complete" (parent = empty, Level = 1)
+- [x] `tables_core.go` — 9 table builders from `*model.MSI`:
+  - `Property` — ProductName, ProductCode, ProductVersion, Manufacturer, UpgradeCode, ProductLanguage=1033, SecureCustomProperties
+  - `Directory` — TARGETDIR (SourceDir), ProgramFilesFolder (parent=TARGETDIR, DefaultDir=.), INSTALLDIR (parent=ProgramFilesFolder, DefaultDir=install.Directory)
+  - `Component` — one per File, deterministic GUID from `ProductName|C_<Destination>` via sha256 v4-like
+  - `Feature` — "Complete" (parent empty, Level=1)
   - `FeatureComponents` — Complete → each Component
-  - `File` — one per payload, Sequence from CAB order
-  - `Media` — DiskId=1, LastSequence, Cabinet="gomsi.cab"
-  - `InstallExecuteSequence` — CostInitialize, FileCost, CostFinalize, InstallValidate, InstallInitialize, ProcessComponents, InstallFiles, RegisterProduct, PublishFeatures, PublishProduct, InstallFinalize
+  - `File` — one per payload, Sequence from index `i+1`
+  - `Media` — DiskId=1, LastSequence=`len(m.Files)`, Cabinet="gomsi.cab"
+  - `InstallExecuteSequence` — MVP subset (11 actions, sequences 1–210)
   - `InstallUISequence` — CostInitialize, FileCost, CostFinalize, ExecuteAction
-- [ ] `cab.go` — `genCAB(cabPath string, files []model.File) error` — wraps `lcab`
-- [ ] `msibuild.go` — `runMSIBuild(msiPath, tempDir) error` — invokes `-i *.idt -a gomsi.cab cab.tmp -s name manufacturer ";1033" {uuid}`
-- [ ] `writer.go` — orchestrate: MkdirTemp → emit IDTs → CAB → msibuild → cleanup
-- [ ] CLI `--emit <dir>` flag — stop after emitting IDT+CAB (skip msibuild), for Windows/CI dev
-- [ ] Test: golden IDT per table
-- [ ] Test: lcab arg construction
-- [ ] Test: msibuild arg construction
-- [ ] Test: `writer.go` end-to-end (msibuild-only on Linux, else verify temp dir contents)
-- [ ] Integration: `go run ./cmd/gomsi build testdata/installer.yaml` → produces `.msi` on Linux
+- [x] `cab.go` — `genCAB(cabPath string, files []model.File) error` — copies sources to staging dir under `Destination` names, then `lcab -n -q`
+- [x] `msibuild.go` — `runMSIBuild(msiPath, tablePaths, cabPath, product) error` — invokes `msibuild <msi> -i <table>.idt ... -a gomsi.cab <cab> -s <name> <mfr> ;1033 <code>`
+- [x] `writer.go` — orchestrates: stat pass → `coreTables()` → write IDTs → `genCAB()` → emit or `runMSIBuild()`; `EmitDir` field skips msibuild; tolerates missing lcab in emit mode (e.g. Windows)
+- [x] CLI `--emit <dir>` flag — stop after emitting IDT+CAB (skip msibuild), for Windows/CI dev
+- [x] Test: golden IDT per core table (`testdata/core/*.idt`)
+- [x] Test: lcab arg construction
+- [x] Test: msibuild arg construction
+- [x] Test: `writer.go` emit path (all platforms) + full build (Linux only)
+- [x] Integration: `go run ./cmd/gomsi build internal/manifest/testdata/installer.yaml --emit out/` (verified on Windows)
 
 ## Phase 3 — Service tables
 

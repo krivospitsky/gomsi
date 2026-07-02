@@ -1,0 +1,4 @@
+File	Component_	FileName	FileSize	Version	Language	Attributes	Sequence
+s72	S72	S255	i4	S72	S20	i4	i2
+File	File
+F_myagent.exe	C_myagent.exe	myagent.exe	12345			0	1
