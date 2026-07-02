@@ -9,7 +9,7 @@ Minimalist, Linux-first MSI package generator for Go applications.
 - YAML/JSON manifest input
 - Installs a single Go `exe` into `Program Files`
 - Registers a Windows service (auto-start, stop on uninstall)
-- Generates `config.json` via Go `text/template`
+- Generates `config.json` at install time via auto-generated VBScript (syntax: `{{.PROPERTY}}` substitution in templates)
 - First-class install parameters → MSI Property, `msiexec` CLI arg, UI field, and template variable
 - Produces uninstallable MSI without any Windows tooling
 
@@ -75,11 +75,17 @@ config:
 
 ## Backend
 
-MVP uses [`msitools`](https://wiki.gnome.org/msitools): generate `.idt` files + CAB, then call `msibuild`. Future phases may switch to `libmsi` or a pure-Go MSI writer.
+MVP uses [`msitools`](https://wiki.gnome.org/msitools) + [`lcab`](http://www.cabextract.org.uk/): generate `.idt` files + CAB via `lcab`, then call `msibuild`. Dependencies (both Linux-only):
+
+```sh
+apt install msitools lcab
+```
+
+Future phases may switch to `libmsi` or a pure-Go MSI writer.
 
 ## Status
 
-Pre-implementation. See [`VISION.md`](VISION.md) for the full design and [`AGENTS.md`](AGENTS.md) for contribution guidance.
+Backend implementation in progress. See [`docs/TODO.md`](docs/TODO.md) for the implementation plan and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for architecture documentation.
 
 ## Non-goals
 
