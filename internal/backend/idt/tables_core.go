@@ -217,12 +217,49 @@ func buildInstallExecuteSequence(m *model.MSI) *Table {
 		{"InstallValidate", "", 10},
 		{"InstallInitialize", "", 50},
 		{"ProcessComponents", "", 60},
+	}
+
+	// Service actions: stop and delete before InstallFiles (to free the
+	// running binary), install after InstallFiles.
+	if len(m.Services) > 0 {
+		entries = append(entries,
+			[]struct {
+				action    string
+				condition string
+				sequence  int
+			}{
+				{"StopServices", "", 140},
+				{"DeleteServices", "", 145},
+			}...,
+		)
+	}
+
+	entries = append(entries, []struct {
+		action    string
+		condition string
+		sequence  int
+	}{
 		{"InstallFiles", "", 150},
+	}...)
+
+	if len(m.Services) > 0 {
+		entries = append(entries, struct {
+			action    string
+			condition string
+			sequence  int
+		}{"InstallServices", "", 155})
+	}
+
+	entries = append(entries, []struct {
+		action    string
+		condition string
+		sequence  int
+	}{
 		{"RegisterProduct", "", 180},
 		{"PublishFeatures", "", 190},
 		{"PublishProduct", "", 200},
 		{"InstallFinalize", "", 210},
-	}
+	}...)
 
 	for _, e := range entries {
 		tbl.AddRow(e.action, e.condition, fmt.Sprintf("%d", e.sequence))

@@ -42,6 +42,7 @@ func (w *Writer) Write(m *model.MSI, outputPath string) error {
 	defer os.RemoveAll(tempDir)
 
 	tables := coreTables(m)
+	tables = append(tables, serviceTables(m)...)
 
 	var tablePaths []string
 	for _, tbl := range tables {

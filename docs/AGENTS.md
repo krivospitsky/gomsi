@@ -4,7 +4,7 @@ Guidance for OpenCode agents working in this repository.
 
 ## Status
 
-Phase 2 of the IDT backend is complete: core tables (Property, Directory, Component, Feature, FeatureComponents, File, Media, InstallExecuteSequence, InstallUISequence), CAB generation via lcab, msibuild invocation, and writer orchestration all work. The remaining phases (service, parameters-as-properties, upgrade, VBScript CA, auto-UI) are pending. See [`TODO.md`](TODO.md) for the full plan. The following resolved design decisions apply:
+Phase 2 and Phase 3 of the IDT backend are complete. Phase 2 delivered core tables (Property, Directory, Component, Feature, FeatureComponents, File, Media, InstallExecuteSequence, InstallUISequence), CAB generation via lcab, msibuild invocation, and writer orchestration. Phase 3 adds ServiceInstall, ServiceControl, and augments InstallExecuteSequence with StopServices/DeleteServices/InstallServices. The remaining phases (parameters-as-properties, upgrade, VBScript CA, auto-UI) are pending. See [`TODO.md`](TODO.md) for the full plan. The following resolved design decisions apply:
 
 | Decision | Choice |
 |----------|--------|

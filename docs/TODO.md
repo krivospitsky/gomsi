@@ -30,12 +30,12 @@
 
 ## Phase 3 — Service tables
 
-- [ ] `tables_service.go` — build from `model.Service`:
+- [x] `tables_service.go` — build from `model.Service`:
   - `ServiceInstall` — Name, Component_, DisplayName, Description, ServiceType=16 (own process), StartType, ErrorControl=normal
   - `ServiceControl` — Name, Event=stop+delete, Wait=true
   - Add InstallServices / StopServices / DeleteServices to InstallExecuteSequence
-- [ ] Update fixture in `testdata/` to include service
-- [ ] Tests: golden IDTs, end-to-end on Linux
+- [x] Update fixture in `testdata/` to include service
+- [x] Tests: golden IDTs, end-to-end on Linux
 
 ## Phase 4 — Parameters as public properties
 

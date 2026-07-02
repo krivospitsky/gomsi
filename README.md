@@ -88,7 +88,7 @@ Future phases may switch to `libmsi` or a pure-Go MSI writer.
 
 ## Status
 
-Backend implementation in progress (Phase 2 complete: core tables, CAB, msibuild, writer orchestration). See [`docs/TODO.md`](docs/TODO.md) for the implementation plan and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for architecture documentation.
+Backend implementation in progress (Phases 1–3 complete: core tables, service tables, CAB, msibuild, writer orchestration). See [`docs/TODO.md`](docs/TODO.md) for the implementation plan and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for architecture documentation.
 
 ## Non-goals
 

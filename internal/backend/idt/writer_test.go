@@ -71,6 +71,81 @@ func TestWriter_Emit(t *testing.T) {
 	}
 }
 
+func TestWriter_Emit_WithService(t *testing.T) {
+	dir := t.TempDir()
+
+	payload := filepath.Join(dir, "myagent.exe")
+	if err := os.WriteFile(payload, []byte("fake exe content"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	emitDir := filepath.Join(dir, "emit")
+	m := &model.MSI{
+		Product: model.Product{
+			Name:         "TestApp",
+			Version:      "2.0.0",
+			Manufacturer: "TestCorp",
+			UpgradeCode:  "{aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa}",
+			ProductCode:  "{bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb}",
+		},
+		Install: model.Install{Directory: "TestApp"},
+		Files: []model.File{
+			{Source: payload, Destination: "myagent.exe"},
+		},
+		Services: []model.Service{
+			{
+				Name:        "myagent",
+				DisplayName: "My Agent",
+				Description: "Monitoring Agent",
+				Start:       "auto",
+			},
+		},
+	}
+
+	w := &Writer{EmitDir: emitDir}
+	outPath := filepath.Join(dir, "out.msi")
+
+	if err := w.Write(m, outPath); err != nil {
+		t.Fatal(err)
+	}
+
+	expectedIDT := []string{
+		"Property.idt", "Directory.idt", "Component.idt",
+		"Feature.idt", "FeatureComponents.idt", "File.idt",
+		"Media.idt", "InstallExecuteSequence.idt", "InstallUISequence.idt",
+		"ServiceInstall.idt", "ServiceControl.idt",
+	}
+	for _, name := range expectedIDT {
+		p := filepath.Join(emitDir, name)
+		fi, err := os.Stat(p)
+		if err != nil {
+			t.Errorf("missing emitted file: %s (%v)", name, err)
+			continue
+		}
+		if fi.Size() == 0 {
+			t.Errorf("emitted file %s is empty", name)
+		}
+	}
+
+	// Verify the service InstallExecuteSequence has the expected number of rows.
+	seqPath := filepath.Join(emitDir, "InstallExecuteSequence.idt")
+	data, err := os.ReadFile(seqPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	lines := 0
+	for _, b := range data {
+		if b == '\n' {
+			lines++
+		}
+	}
+	// Header + PK row + 3 header rows? Actually IDT has col names (line1),
+	// col types (line2), PK (line3), then 14 data rows = 17 total lines.
+	if lines != 17 {
+		t.Errorf("InstallExecuteSequence.idt: got %d lines, want 17 (3 header + 14 data)", lines)
+	}
+}
+
 func TestWriter_Emit_CreatesDir(t *testing.T) {
 	dir := t.TempDir()
 	payload := filepath.Join(dir, "payload.bin")
