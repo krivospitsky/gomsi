@@ -1,0 +1,4 @@
+{
+  "serverUrl": "{{.SERVERURL}}",
+  "token": "{{.TOKEN}}"
+}

@@ -302,6 +302,14 @@ func buildInstallExecuteSequence(m *model.MSI) *Table {
 		}{"InstallServices", "", 155})
 	}
 
+	if m.Config.Template != "" {
+		entries = append(entries, struct {
+			action    string
+			condition string
+			sequence  int
+		}{"SetWriteConfig", "NOT REMOVE~=\"ALL\"", 151})
+	}
+
 	entries = append(entries, []struct {
 		action    string
 		condition string
@@ -310,6 +318,21 @@ func buildInstallExecuteSequence(m *model.MSI) *Table {
 		{"RegisterProduct", "", 180},
 		{"PublishFeatures", "", 190},
 		{"PublishProduct", "", 200},
+	}...)
+
+	if m.Config.Template != "" {
+		entries = append(entries, struct {
+			action    string
+			condition string
+			sequence  int
+		}{"WriteConfig", "NOT REMOVE~=\"ALL\"", 205})
+	}
+
+	entries = append(entries, []struct {
+		action    string
+		condition string
+		sequence  int
+	}{
 		{"InstallFinalize", "", 210},
 	}...)
 

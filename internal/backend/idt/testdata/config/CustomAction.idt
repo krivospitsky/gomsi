@@ -1,0 +1,5 @@
+Action	Condition	Type	Source	Target
+s72	S255	i2	S72	S255
+CustomAction	Action
+SetWriteConfig		51	WriteConfig	[INSTALLDIR]config.json|[SERVERURL]|[TOKEN]
+WriteConfig		3078	WriteConfig	WriteConfig

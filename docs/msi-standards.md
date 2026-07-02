@@ -329,6 +329,7 @@ Wait:
 | Column | Type | PK |
 |---|---|---|
 | Action | `s72` | Yes |
+| Condition | `S255` | No |
 | Type | `i2` | No |
 | Source | `S72` | No |
 | Target | `S255` | No |
@@ -343,12 +344,12 @@ Type encodes the action kind + flags:
 | 38 | Inline VBScript (`Target` = script text) |
 | 50 | Inline JScript |
 | 51 | Property set (Formatted) |
-| 3074 | Deferred + VBScript from Binary (6 + 0x400 + 0x800) |
+| 3078 | Deferred + VBScript from Binary (6 + 0x400 InScript + 0x800 NoImpersonate) |
 | 1026 | Deferred + set property (51 + 0x400 + 0x800) |
 
 Key flags for CustomAction:
-- `msidbCustomActionTypeDeferred` = `0x400` (runs in execute/silent-without-ui sequence)
-- `msidbCustomActionTypeInScript` = `0x800` (runs during script execution)
+- `msidbCustomActionTypeInScript` = `0x400` (deferred — runs in the execute/silent sequence)
+- `msidbCustomActionTypeNoImpersonate` = `0x800` (runs as LocalSystem, no user impersonation)
 
 A deferred CA (0x400) reads its input from `Session.Property("CustomActionData")`, which the installer populates from the property named after the CA. To pass data: create a Type 51 immediate CA that sets the property `<DeferredCAName>` to a Formatted string.
 
@@ -357,9 +358,9 @@ A deferred CA (0x400) reads its input from `Session.Property("CustomActionData")
 | Column | Type | PK |
 |---|---|---|
 | Name | `s72` | Yes |
-| Data | `S0` | No |
+| Data | `V0` | No |
 
-Stores binary data (VBScript CA, bitmaps, etc.) as streams in `_Streams`.
+The `V0` column type is a binary‑object reference. On import, msibuild reads the actual bytes from a sidecar file at `<TableName>/<cellValue>` (e.g. `Binary/WriteConfig.vbs`). Stores binary data (VBScript CA, bitmaps, etc.) as streams in `_Streams`.
 
 ### Upgrade
 

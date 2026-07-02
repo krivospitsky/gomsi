@@ -90,7 +90,7 @@ func TestRunMSIBuild(t *testing.T) {
 		Name:         "Test",
 		Manufacturer: "Mfr",
 		ProductCode:  "{00000000-0000-0000-0000-000000000000}",
-	})
+	}, dir)
 
 	fi, err := os.Stat(msiPath)
 	if err != nil {

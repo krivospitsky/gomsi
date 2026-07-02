@@ -54,17 +54,24 @@
 
 ## Phase 6 — Config via VBScript CA
 
-- [ ] `vbscript.go` — generate VBScript that:
+- [x] `vbscript.go` — generate VBScript that:
   - Reads `Session.Property("CustomActionData")` — format: `outputPath|prop1|prop2|…`
   - For each sentinel `__GOMSI_<PROPERTY>__` in the template, replaces with the live property value
   - Writes file via `CreateTextFile`
   - Build-time: read Go template, translate `{{.PROPERTY}}` → `__GOMSI_PROPERTY__` sentinel, bake skeleton into VBScript
-- [ ] `tables_config.go`:
-  - `CustomAction` — immediate SetWriteConfig (Type 51, Formatted `[INSTALLDIR]output|...`), deferred WriteConfig (Type 6 + deferred, Binary stream = VBScript)
-  - `Binary` — name=WriteConfig.vbs, data=generated VBScript
-  - Add to InstallExecuteSequence: SetWriteConfig (immediate, after InstallFiles), WriteConfig (deferred, before InstallFinalize), condition `NOT REMOVE~="ALL"`
-- [ ] Document limitation: only `{{.PROPERTY}}` substitution supported, no `range`/`if`
-- [ ] Tests: golden IDT for CustomAction/Binary; end-to-end on Linux
+  - Rejects unsupported Go template constructs (`range`, `if`, `with`, etc.)
+- [x] `tables_config.go`:
+  - `CustomAction` — immediate SetWriteConfig (Type 51, Source=WriteConfig, Formatted Target `[INSTALLDIR]output|...`), deferred WriteConfig (Type 3078 = 6|0x400|0x800, Binary stream = VBScript, Target="WriteConfig" function)
+  - `Binary` — Name=WriteConfig (PK), Data=V0 → sidecar `WriteConfig.vbs`
+  - 5-column CustomAction schema (Action, Condition, Type, Source, Target) matching real MSI
+- [x] Add to InstallExecuteSequence: SetWriteConfig (151, after InstallFiles), WriteConfig (205, before InstallFinalize), condition `NOT REMOVE~="ALL"`
+- [x] CLI resolves `config.template` to absolute path (matching `File.Source` resolution)
+- [x] Document limitation: only `{{.PROPERTY}}` substitution supported, no `range`/`if`
+- [x] Tests: golden IDT for CustomAction/Binary/Sequence; golden VBScript; translate/reject unit tests; emit + full-build (Linux) writer tests
+
+## Known issues
+
+- [ ] **Codepage + msibuild import incompatibility (Phase 1 regression)**: gomsi prefixes the codepage on IDT row 3 (e.g. `1251\tBinary\tName`), but msitools' `libmsi` does not strip it — it treats row 3's first field as the table name. msitools instead uses a separate `_ForceCodepage.idt`. Fix: emit `_ForceCodepage.idt` via the writer when `codepage≠0`, drop the row‑3 codepage prefix in `table.go`. Currently any full build with `codepage≠0` breaks at msibuild; golden‑file and e2e tests use `CodePage=0`.
 
 ## Phase 7 — Auto-UI
 

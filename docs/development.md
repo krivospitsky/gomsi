@@ -81,7 +81,7 @@ go run ./cmd/gomsi build internal/manifest/testdata/installer.yaml
 - Model stays backend-agnostic — no IDT column names, no table references, no MSI-specific structs leak into `internal/model`.
 - Parameter property names (uppercase) are the canonical identifier everywhere: MSI properties, `msiexec` CLI args, VBScript sentinels, config skeleton substitution.
 - Codepage flows from manifest → `model.MSI.CodePage` → IDT table `CodePage` field. The IDT emitter auto-detects CP1251 (Cyrillic) or CP1252 (Latin) when CodePage is 0; explicit 1251/1252 forces the codepage. Test both codepaths with inline and golden tests.
-- Golden IDT files use `.idt` extension and are committed under `testdata/`. Phase-2 core-table golden files are in `testdata/core/`, Phase-3 service golden files are in `testdata/service/`, and Phase-4 parameter golden files are in `testdata/params/`.
+- Golden IDT files use `.idt` extension and are committed under `testdata/`. Phase-2 core-table golden files are in `testdata/core/`, Phase-3 service golden files are in `testdata/service/`, Phase-4 parameter golden files are in `testdata/params/`, and Phase‑6 config (CustomAction + Binary + sequence + VBScript) golden files are in `testdata/config/`.
 
 ## VBScript CA debug
 

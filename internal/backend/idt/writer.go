@@ -44,6 +44,7 @@ func (w *Writer) Write(m *model.MSI, outputPath string) error {
 	tables := coreTables(m)
 	tables = append(tables, serviceTables(m)...)
 	tables = append(tables, upgradeTables(m)...)
+	tables = append(tables, configTables(m)...)
 
 	var tablePaths []string
 	for _, tbl := range tables {
@@ -52,6 +53,24 @@ func (w *Writer) Write(m *model.MSI, outputPath string) error {
 			return fmt.Errorf("write %s.idt: %w", tbl.Name, err)
 		}
 		tablePaths = append(tablePaths, p)
+	}
+
+	// If config is defined, generate the VBScript CA and write the stream
+	// sidecar that msibuild loads for the Binary table.
+	var configSidecar string
+	if m.Config.Template != "" {
+		vbs, err := generateVBScript(m)
+		if err != nil {
+			return fmt.Errorf("generate VBScript CA: %w", err)
+		}
+		sidecarDir := filepath.Join(tempDir, "Binary")
+		if err := os.MkdirAll(sidecarDir, 0755); err != nil {
+			return fmt.Errorf("create Binary sidecar dir: %w", err)
+		}
+		configSidecar = filepath.Join(sidecarDir, "WriteConfig.vbs")
+		if err := os.WriteFile(configSidecar, vbs, 0644); err != nil {
+			return fmt.Errorf("write VBScript sidecar: %w", err)
+		}
 	}
 
 	// Generate CAB when lcab is available. In emit mode, skip gracefully
@@ -68,10 +87,10 @@ func (w *Writer) Write(m *model.MSI, outputPath string) error {
 	}
 
 	if w.EmitDir != "" {
-		return emitToDir(w.EmitDir, tablePaths, cabPath)
+		return emitToDir(w.EmitDir, tablePaths, cabPath, configSidecar)
 	}
 
-	if err := runMSIBuild(outputPath, tablePaths, cabPath, m.Product); err != nil {
+	if err := runMSIBuild(outputPath, tablePaths, cabPath, m.Product, tempDir); err != nil {
 		return fmt.Errorf("msibuild: %w", err)
 	}
 
@@ -90,9 +109,10 @@ func statFiles(m *model.MSI) error {
 	return nil
 }
 
-// emitToDir copies all generated IDT files and (when cabPath is non-empty)
-// the CAB to the given directory.
-func emitToDir(dir string, tablePaths []string, cabPath string) error {
+// emitToDir copies all generated IDT files, the CAB (when cabPath is
+// non-empty), and the VBScript config sidecar (when configSidecar is
+// non-empty) to the given directory.
+func emitToDir(dir string, tablePaths []string, cabPath string, configSidecar string) error {
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return fmt.Errorf("create emit dir: %w", err)
 	}
@@ -114,6 +134,21 @@ func emitToDir(dir string, tablePaths []string, cabPath string) error {
 			return err
 		}
 		dst := filepath.Join(dir, filepath.Base(cabPath))
+		if err := os.WriteFile(dst, data, 0644); err != nil {
+			return err
+		}
+	}
+
+	if configSidecar != "" {
+		vbsDir := filepath.Join(dir, "Binary")
+		if err := os.MkdirAll(vbsDir, 0755); err != nil {
+			return fmt.Errorf("create Binary emit dir: %w", err)
+		}
+		data, err := os.ReadFile(configSidecar)
+		if err != nil {
+			return err
+		}
+		dst := filepath.Join(vbsDir, filepath.Base(configSidecar))
 		if err := os.WriteFile(dst, data, 0644); err != nil {
 			return err
 		}

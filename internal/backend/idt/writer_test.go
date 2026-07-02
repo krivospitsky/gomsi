@@ -311,3 +311,183 @@ func TestWriter_FullBuild(t *testing.T) {
 	}
 	t.Logf("Full MSI build: %s (%d bytes)", msiPath, fi.Size())
 }
+
+func TestWriter_Emit_WithConfig(t *testing.T) {
+	dir := t.TempDir()
+
+	payload := filepath.Join(dir, "myagent.exe")
+	if err := os.WriteFile(payload, []byte("fake payload"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	tpl := filepath.Join(dir, "config.tpl")
+	if err := os.WriteFile(tpl, []byte("url={{.SERVERURL}}\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	emitDir := filepath.Join(dir, "emit")
+	m := &model.MSI{
+		Product: model.Product{
+			Name:         "TestApp",
+			Version:      "2.0.0",
+			Manufacturer: "TestCorp",
+			ProductCode:  "{bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb}",
+		},
+		Install: model.Install{Directory: "TestApp"},
+		Files: []model.File{
+			{Source: payload, Destination: "myagent.exe"},
+		},
+		Parameters: []model.Parameter{
+			{Name: "serverUrl", Property: "SERVERURL", Default: "http://example.com"},
+		},
+		Config: model.Config{
+			Template: tpl,
+			Output:   "config.json",
+		},
+	}
+
+	w := &Writer{EmitDir: emitDir}
+	if err := w.Write(m, "out.msi"); err != nil {
+		t.Fatal(err)
+	}
+
+	// Verify config-related IDTs exist.
+	for _, name := range []string{"CustomAction.idt", "Binary.idt"} {
+		p := filepath.Join(emitDir, name)
+		fi, err := os.Stat(p)
+		if err != nil {
+			t.Errorf("missing emitted file: %s (%v)", name, err)
+			continue
+		}
+		if fi.Size() == 0 {
+			t.Errorf("emitted file %s is empty", name)
+		}
+	}
+
+	// Verify the VBScript sidecar exists.
+	vbsPath := filepath.Join(emitDir, "Binary", "WriteConfig.vbs")
+	fi, err := os.Stat(vbsPath)
+	if err != nil {
+		t.Errorf("missing VBScript sidecar: %v", err)
+	} else if fi.Size() == 0 {
+		t.Errorf("VBScript sidecar is empty")
+	} else {
+		data, _ := os.ReadFile(vbsPath)
+		if !strings.Contains(string(data), "Function WriteConfig()") {
+			t.Error("VBScript missing Function WriteConfig()")
+		}
+	}
+
+	// Verify core tables still present.
+	for _, name := range []string{"Property.idt", "Directory.idt", "InstallExecuteSequence.idt"} {
+		p := filepath.Join(emitDir, name)
+		if _, err := os.Stat(p); err != nil {
+			t.Errorf("missing core emitted file: %s (%v)", name, err)
+		}
+	}
+}
+
+func TestWriter_Emit_WithConfigNoParams(t *testing.T) {
+	dir := t.TempDir()
+
+	payload := filepath.Join(dir, "myagent.exe")
+	if err := os.WriteFile(payload, []byte("fake"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	tpl := filepath.Join(dir, "config.tpl")
+	if err := os.WriteFile(tpl, []byte("static content\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	emitDir := filepath.Join(dir, "emit")
+	m := &model.MSI{
+		Product: model.Product{
+			Name:         "NoParam",
+			Version:      "1.0.0",
+			Manufacturer: "Test",
+			ProductCode:  "{cccccccc-cccc-cccc-cccc-cccccccccccc}",
+		},
+		Install: model.Install{Directory: "N"},
+		Files: []model.File{
+			{Source: payload, Destination: "n.exe"},
+		},
+		Config: model.Config{
+			Template: tpl,
+			Output:   "static.json",
+		},
+	}
+
+	w := &Writer{EmitDir: emitDir}
+	if err := w.Write(m, "out.msi"); err != nil {
+		t.Fatal(err)
+	}
+
+	// Verify IDTs exist.
+	for _, name := range []string{"CustomAction.idt", "Binary.idt"} {
+		p := filepath.Join(emitDir, name)
+		if _, err := os.Stat(p); err != nil {
+			t.Errorf("missing emitted file: %s (%v)", name, err)
+		}
+	}
+}
+
+func TestWriter_FullBuild_WithConfig(t *testing.T) {
+	if _, err := exec.LookPath("msibuild"); err != nil {
+		t.Skip("msibuild not available:", err)
+	}
+	if _, err := exec.LookPath("lcab"); err != nil {
+		t.Skip("lcab not available:", err)
+	}
+	if runtime.GOOS == "windows" {
+		t.Skip("msibuild/lcab are Linux-only")
+	}
+
+	dir := t.TempDir()
+
+	payload := filepath.Join(dir, "myagent.exe")
+	if err := os.WriteFile(payload, []byte("fake exe for full build with config"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	tpl := filepath.Join(dir, "config.tpl")
+	if err := os.WriteFile(tpl, []byte("url={{.SERVERURL}}\ntoken={{.TOKEN}}\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	m := &model.MSI{
+		Product: model.Product{
+			Name:         "FullConfig",
+			Version:      "1.0.0",
+			Manufacturer: "TestCo",
+			ProductCode:  "{ffffffff-ffff-ffff-ffff-ffffffffffff}",
+		},
+		Install: model.Install{Directory: "FullConfig"},
+		Files: []model.File{
+			{Source: payload, Destination: "myagent.exe"},
+		},
+		Parameters: []model.Parameter{
+			{Name: "serverUrl", Property: "SERVERURL", Default: "https://default.example.com"},
+			{Name: "token", Property: "TOKEN", Default: "s3cr3t"},
+		},
+		Config: model.Config{
+			Template: tpl,
+			Output:   "config.json",
+		},
+	}
+
+	msiPath := filepath.Join(dir, "output.msi")
+	w := &Writer{}
+	if err := w.Write(m, msiPath); err != nil {
+		t.Fatal(err)
+	}
+
+	fi, err := os.Stat(msiPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if fi.Size() == 0 {
+		t.Fatal("MSI output is empty")
+	}
+	t.Logf("Full MSI build with config: %s (%d bytes)", msiPath, fi.Size())
+}

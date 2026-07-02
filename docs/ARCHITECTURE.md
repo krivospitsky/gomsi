@@ -123,8 +123,8 @@ Per [MS docs](https://learn.microsoft.com/en-us/windows/win32/msi/archive-file-f
 Config rendering at install time uses a **VBScript CustomAction**:
 
 1. **Build time**: gomsi reads `config.template` (Go text/template), replaces each `{{.PROPERTY}}` with a sentinel `__GOMSI_<PROPERTY>__`, bakes the skeleton into a VBScript CA.
-2. **Immediate CA** (Type 51, sets property `WriteConfigData`): uses Formatted Target `[INSTALLDIR]<output>|...` to capture the resolved install directory and property values.
-3. **Deferred CA** (Type 6, VBScript from Binary table, + deferred flag `msidbCustomActionTypeDeferred` 0x400): reads `Session.Property("CustomActionData")` (set from `WriteConfigData` by the installer), replaces all sentinels with live values, writes config file via `FileSystemObject`.
+2. **Immediate CA** (Type 51, sets property `WriteConfig`): uses Formatted Target `[INSTALLDIR]<output>|...` to capture the resolved install directory and property values. Because the deferred CA is named `WriteConfig`, the installer copies this property into `CustomActionData`.
+3. **Deferred CA** (Type 3078 = Type 6 VBScript from Binary + InScript 0x400 + NoImpersonate 0x800): reads `Session.Property("CustomActionData")` (set from the `WriteConfig` property by the installer), replaces all sentinels with live values, writes config file via `FileSystemObject`.
 4. **Sequencing**: between `InstallInitialize` and `InstallFinalize`; condition `NOT REMOVE~="ALL"`.
 
 **Limitation**: only `{{.PROPERTY}}` variable substitution is supported. Go template constructs like `range`, `if`, `with` are not executed (future improvement).

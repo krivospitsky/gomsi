@@ -24,7 +24,11 @@ func msibuildArgs(msiPath string, tablePaths []string, cabPath string, p model.P
 
 // runMSIBuild invokes msibuild to assemble the MSI package from the given
 // table IDT files and embedded cabinet.
-func runMSIBuild(msiPath string, tablePaths []string, cabPath string, p model.Product) error {
+//
+// workDir is the working directory for the msibuild process. It must be set
+// to the temp build directory so that Binary table stream references (loaded
+// via g_build_filename("Binary", cellValue)) resolve correctly.
+func runMSIBuild(msiPath string, tablePaths []string, cabPath string, p model.Product, workDir string) error {
 	msibuildPath, err := exec.LookPath("msibuild")
 	if err != nil {
 		return fmt.Errorf("msibuild not found: %w", err)
@@ -32,6 +36,7 @@ func runMSIBuild(msiPath string, tablePaths []string, cabPath string, p model.Pr
 
 	args := msibuildArgs(msiPath, tablePaths, cabPath, p)
 	cmd := exec.Command(msibuildPath, args...)
+	cmd.Dir = workDir
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("msibuild failed: %w\noutput:\n%s", err, out)

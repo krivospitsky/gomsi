@@ -29,12 +29,15 @@ var buildCmd = &cobra.Command{
 			return err
 		}
 
-		// Resolve file sources relative to the manifest file's directory.
+		// Resolve file sources and config template relative to the manifest file's directory.
 		manifestDir := filepath.Dir(args[0])
 		for i := range m.Files {
 			if !filepath.IsAbs(m.Files[i].Source) {
 				m.Files[i].Source = filepath.Join(manifestDir, m.Files[i].Source)
 			}
+		}
+		if m.Config.Template != "" && !filepath.IsAbs(m.Config.Template) {
+			m.Config.Template = filepath.Join(manifestDir, m.Config.Template)
 		}
 
 		outPath := outputFlag
