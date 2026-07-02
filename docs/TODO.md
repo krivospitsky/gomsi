@@ -2,8 +2,9 @@
 
 ## Phase 1 — IDT emitter infra
 
-- [ ] `internal/backend/idt/table.go` — Table struct, column defs, IDT text serializer (tab + `\r\n`, control-char escaping, col type mapping: `s`/`S`/`l`/`L`/`v`/`V`/`i`/`I` + size)
-- [ ] Golden file tests (`testdata/*.idt`) — ASCII/non-ASCII, nulls, special chars, single/multi row
+- [x] `internal/backend/idt/table.go` — Table struct, column defs, IDT text serializer (tab + `\r\n`, control-char escaping, col type mapping: `s`/`S`/`l`/`L`/`v`/`V`/`i`/`I` + size)
+- [x] Golden file tests (`testdata/*.idt`) — ASCII/non-ASCII, nulls, special chars, single/multi row
+- [x] Manifest `codepage` parameter — `model.MSI.CodePage`, parser wiring, testdata fixture, docs
 
 ## Phase 2 — Core → minimal installable MSI
 

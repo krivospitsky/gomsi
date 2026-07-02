@@ -12,6 +12,12 @@ type MSI struct {
 	Services   []Service
 	Parameters []Parameter
 	Config     Config
+	// CodePage controls the Windows-125x codepage for non-ASCII strings in
+	// the generated IDT tables. 0 (default) means auto-detect: CP1251 for
+	// Cyrillic text, CP1252 for Latin-1 supplement. Common explicit values:
+	// 1251 (Cyrillic/Russian), 1252 (Western European). Any string not
+	// representable in the selected codepage causes the build to fail.
+	CodePage int
 }
 
 // Product describes the product identity written into the MSI summary.

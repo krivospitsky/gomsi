@@ -19,6 +19,7 @@ import (
 // The "service" key is singular in the manifest but maps to the model's
 // Services slice to keep the door open for multiple services later.
 type rawManifest struct {
+	CodePage   int                    `yaml:"codepage" json:"codepage"`
 	Product    rawProduct             `yaml:"product" json:"product"`
 	Install    rawInstall             `yaml:"install" json:"install"`
 	Files      []rawFile              `yaml:"files" json:"files"`
@@ -92,6 +93,7 @@ func Parse(path string) (*model.MSI, error) {
 
 func convert(r rawManifest) (*model.MSI, error) {
 	m := &model.MSI{
+		CodePage: r.CodePage,
 		Product: model.Product{
 			Name:         r.Product.Name,
 			Version:      r.Product.Version,

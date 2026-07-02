@@ -24,6 +24,7 @@ func New() *Writer { return &Writer{} }
 var _ backend.Writer = (*Writer)(nil)
 
 // Write renders the model to an MSI file. Not yet implemented.
+// The model's CodePage field is respected for non-ASCII IDT encoding.
 func (w *Writer) Write(m *model.MSI, outputPath string) error {
 	_ = m
 	_ = outputPath

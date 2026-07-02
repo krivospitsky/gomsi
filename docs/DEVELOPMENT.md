@@ -79,6 +79,7 @@ go run ./cmd/gomsi build internal/manifest/testdata/installer.yaml
 - IDT format logic lives **only** in `internal/backend/idt/table.go`. Every other file in the idt package uses `Table`, never raw tab/string assembly.
 - Model stays backend-agnostic — no IDT column names, no table references, no MSI-specific structs leak into `internal/model`.
 - Parameter property names (uppercase) are the canonical identifier everywhere: MSI properties, `msiexec` CLI args, VBScript sentinels, config skeleton substitution.
+- Codepage flows from manifest → `model.MSI.CodePage` → IDT table `CodePage` field. The IDT emitter auto-detects CP1251 (Cyrillic) or CP1252 (Latin) when CodePage is 0; explicit 1251/1252 forces the codepage. Test both codepaths with inline and golden tests.
 - Golden IDT files use `.idt` extension and are committed to `testdata/`.
 
 ## VBScript CA debug

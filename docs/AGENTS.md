@@ -11,6 +11,7 @@ Backend implementation in progress. The CLI, manifest parser, model, config rend
 | CAB generation | `lcab` (external, apt-installable) |
 | Config at install | VBScript CustomAction (sentinel substitution) |
 | UI scope | Auto-generated dialogs from parameters (included in MVP) |
+| Non-ASCII codepage | CP1251 (Cyrillic, Russian-first) / CP1252 (Latin) auto-detect; explicit `codepage` in manifest |
 
 
 Resolved forks are recorded as design facts — do not revisit without reason.
@@ -48,6 +49,7 @@ Hard constraints (do not violate without reason):
 
 - The manifest key is **`service:`** (singular) but it maps into the model's **`Services []Service`** slice. Don't "fix" the mismatch; it's deliberate to leave room for multiple services.
 - `parameters` is a YAML map (unordered). The parser **sorts parameters by key** so builds are deterministic — preserve this, do not switch to unsorted map iteration.
+- The manifest accepts a top-level `codepage` field (int, 0=auto). It flows into `model.MSI.CodePage` and is used by the IDT emitter for non-ASCII text encoding (CP1251 for Cyrillic, CP1252 for Latin).
 - `upgradeCode`/`productCode: auto` (or empty) are resolved to freshly generated braced GUIDs **at parse time**; explicit values are preserved verbatim.
 - In config templates, a parameter is referenced by its **`property`** name (e.g. `{{.SERVERURL}}`), **not** its manifest key (e.g. `serverUrl`).
 - The CLI is cobra-based; add subcommands in `internal/cli` and register them on the root in an `init()`.

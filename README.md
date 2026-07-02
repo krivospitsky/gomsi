@@ -11,6 +11,7 @@ Minimalist, Linux-first MSI package generator for Go applications.
 - Registers a Windows service (auto-start, stop on uninstall)
 - Generates `config.json` at install time via auto-generated VBScript (syntax: `{{.PROPERTY}}` substitution in templates)
 - First-class install parameters → MSI Property, `msiexec` CLI arg, UI field, and template variable
+- Non-ASCII support via Windows codepages: CP1251 (Cyrillic, Russian) / CP1252 (Latin), auto-detected or explicit in manifest
 - Produces uninstallable MSI without any Windows tooling
 
 ## Quick start
@@ -34,6 +35,8 @@ msiexec /qn /i MyAgent.msi SERVERURL=https://prod TOKEN=abc123
 ## Manifest example
 
 ```yaml
+codepage: 1251
+
 product:
   name: MyAgent
   version: 1.2.3

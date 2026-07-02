@@ -48,6 +48,9 @@ func TestParse_YAML(t *testing.T) {
 	if m.Config.Output != "config.json" {
 		t.Errorf("Config.Output = %q", m.Config.Output)
 	}
+	if m.CodePage != 1251 {
+		t.Errorf("CodePage = %d, want 1251", m.CodePage)
+	}
 }
 
 func TestParse_AutoCodesResolveToGUIDs(t *testing.T) {

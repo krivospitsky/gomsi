@@ -1,3 +1,5 @@
+codepage: 1251
+
 product:
   name: MyAgent
   version: 1.2.3
