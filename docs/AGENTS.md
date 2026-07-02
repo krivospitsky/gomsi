@@ -4,7 +4,7 @@ Guidance for OpenCode agents working in this repository.
 
 ## Status
 
-Phases 2–6 of the IDT backend are complete. Phase 2 delivered core tables (Property, Directory, Component, Feature, FeatureComponents, File, Media, InstallExecuteSequence, InstallUISequence), CAB generation via lcab, msibuild invocation, and writer orchestration. Phase 3 adds ServiceInstall, ServiceControl, and augments InstallExecuteSequence with StopServices/DeleteServices/InstallServices. Phase 4 adds parameter Property rows and populates SecureCustomProperties. Phase 5 adds the Upgrade table, appends OLDPRODUCTSFOUND to SecureCustomProperties, and inserts FindRelatedProducts/RemoveExistingProducts into InstallExecuteSequence for automatic major-upgrade uninstall. Phase 6 adds VBScript CA generation (`vbscript.go`), the CustomAction + Binary tables (`tables_config.go`), resolves `config.template` in the CLI, and wires the VBScript sidecar into the writer for msibuild stream import. The remaining phase (auto-UI) is pending. See [`TODO.md`](TODO.md) for the full plan and a known codepage+msibuild incompatibility. The following resolved design decisions apply:
+Phases 2–7 of the IDT backend are complete. Phase 2 delivered core tables (Property, Directory, Component, Feature, FeatureComponents, File, Media, InstallExecuteSequence, InstallUISequence), CAB generation via lcab, msibuild invocation, and writer orchestration. Phase 3 adds ServiceInstall, ServiceControl, and augments InstallExecuteSequence with StopServices/DeleteServices/InstallServices. Phase 4 adds parameter Property rows and populates SecureCustomProperties. Phase 5 adds the Upgrade table, appends OLDPRODUCTSFOUND to SecureCustomProperties, and inserts FindRelatedProducts/RemoveExistingProducts into InstallExecuteSequence for automatic major-upgrade uninstall. Phase 6 adds VBScript CA generation (`vbscript.go`), the CustomAction + Binary tables (`tables_config.go`), resolves `config.template` in the CLI, and wires the VBScript sidecar into the writer for msibuild stream import. Phase 7 adds auto-UI: TextStyle, Dialog, Control, ControlEvent tables + Property/InstallUISequence augmentation, gated on visible parameters, text-only dialogs. The codepage+msibuild incompatibility has been fixed (row‑3 prefix dropped, `_ForceCodepage.idt` emitted). Phase 8 (CI + docs) is the sole remaining phase. See [`TODO.md`](TODO.md) for details. The following resolved design decisions apply:
 
 | Decision | Choice |
 |----------|--------|
@@ -37,6 +37,7 @@ Hard constraints (do not violate without reason):
   - `internal/backend/idt/tables_service.go` — ServiceInstall, ServiceControl
   - `internal/backend/idt/tables_upgrade.go` — Upgrade
   - `internal/backend/idt/tables_config.go` — CustomAction, Binary
+  - `internal/backend/idt/tables_ui.go` — TextStyle, Dialog, Control, ControlEvent
   - `internal/backend/idt/tables_ui.go` — Dialog, Control, ControlCondition, ControlEvent, TextStyle
   - `internal/backend/idt/cab.go` — `lcab` invocation
   - `internal/backend/idt/msibuild.go` — `msibuild` invocation + summary info

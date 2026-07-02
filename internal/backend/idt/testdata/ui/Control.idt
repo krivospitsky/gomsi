@@ -1,0 +1,28 @@
+Dialog_	Control	Type	X	Y	Width	Height	Attributes	Property	Text	Control_Next	Help
+s72	s50	s50	i2	i2	i2	i2	I4	S50	S0	S50	S0
+Control	Dialog_	Control
+WelcomeDlg	Title	Text	20	10	330	20	65539		[DefaultUIFont]Welcome to [ProductName] Setup	Body	
+WelcomeDlg	Body	Text	20	35	330	195	65539		[DefaultUIFont]This wizard will install [ProductName] on your computer. Click Next to continue or Cancel to exit.	BottomLine	
+WelcomeDlg	BottomLine	Line	0	234	370	1	3			NextBtn	
+WelcomeDlg	NextBtn	PushButton	236	243	56	17	3		[ButtonText_Next]	CancelBtn	
+WelcomeDlg	CancelBtn	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Title	
+ParametersDlg	Title	Text	20	10	330	20	65539		[DefaultUIFont]Configure [ProductName]	Body	
+ParametersDlg	Body	Text	20	35	330	15	65539		[DefaultUIFont]Set the following parameters:	Label_SERVERURL	
+ParametersDlg	Label_SERVERURL	Text	20	55	110	15	65539		[DefaultUIFont]Server URL	Edit_SERVERURL	
+ParametersDlg	Edit_SERVERURL	Edit	140	55	210	17	3	SERVERURL		Label_TOKEN	
+ParametersDlg	Label_TOKEN	Text	20	90	110	15	65539		[DefaultUIFont]Auth Token	BackBtn	
+ParametersDlg	Edit_TOKEN	Edit	140	90	210	17	2097155	TOKEN		BackBtn	
+ParametersDlg	BottomLine	Line	0	234	370	1	3			BackBtn	
+ParametersDlg	BackBtn	PushButton	180	243	56	17	3		[ButtonText_Back]	NextBtn	
+ParametersDlg	NextBtn	PushButton	236	243	56	17	3		[ButtonText_Next]	CancelBtn	
+ParametersDlg	CancelBtn	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Title	
+VerifyReadyDlg	Title	Text	20	10	330	20	65539		[DefaultUIFont]Ready to Install [ProductName]	Body	
+VerifyReadyDlg	Body	Text	20	35	330	195	65539		[DefaultUIFont]Click Next to begin the installation.	BottomLine	
+VerifyReadyDlg	BottomLine	Line	0	234	370	1	3			BackBtn	
+VerifyReadyDlg	BackBtn	PushButton	180	243	56	17	3		[ButtonText_Back]	NextBtn	
+VerifyReadyDlg	NextBtn	PushButton	236	243	56	17	3		[ButtonText_Next]	CancelBtn	
+VerifyReadyDlg	CancelBtn	PushButton	304	243	56	17	3		[ButtonText_Cancel]	Title	
+ExitDlg	Title	Text	20	10	330	20	65539		[DefaultUIFont]Completed [ProductName] Setup	Body	
+ExitDlg	Body	Text	20	35	330	195	65539		[DefaultUIFont][ProductName] has been installed successfully.	BottomLine	
+ExitDlg	BottomLine	Line	0	234	370	1	3			FinishBtn	
+ExitDlg	FinishBtn	PushButton	236	243	56	17	3		[ButtonText_Finish]	Title	

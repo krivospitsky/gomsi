@@ -216,7 +216,7 @@ func TestRender_NonASCII_Cyrillic1251(t *testing.T) {
 	var want bytes.Buffer
 	want.WriteString("Key\tVal\r\n")
 	want.WriteString("s72\tS0\r\n")
-	want.WriteString("1251\trus\tKey\r\n")
+	want.WriteString("rus\tKey\r\n")
 	want.WriteString("productName\t")
 	want.Write(valBytes)
 	want.WriteString("\r\n")
@@ -249,7 +249,7 @@ func TestRender_NonASCII_Latin1252(t *testing.T) {
 	var want bytes.Buffer
 	want.WriteString("Key\tVal\r\n")
 	want.WriteString("s72\tS0\r\n")
-	want.WriteString("1252\tlat\tKey\r\n")
+	want.WriteString("lat\tKey\r\n")
 	want.WriteString("company\t")
 	want.Write(valBytes)
 	want.WriteString("\r\n")

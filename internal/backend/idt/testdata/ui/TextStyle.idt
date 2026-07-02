@@ -1,0 +1,4 @@
+TextStyle	FaceName	Size	Color	StyleBits
+s72	s31	i2	I4	I2
+TextStyle	TextStyle
+DlgFont8	Verdana	8		

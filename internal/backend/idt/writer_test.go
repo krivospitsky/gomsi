@@ -1,6 +1,7 @@
 package idt
 
 import (
+	"bytes"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -383,6 +384,64 @@ func TestWriter_Emit_WithConfig(t *testing.T) {
 		p := filepath.Join(emitDir, name)
 		if _, err := os.Stat(p); err != nil {
 			t.Errorf("missing core emitted file: %s (%v)", name, err)
+		}
+	}
+}
+
+func TestWriter_Emit_ForceCodepage(t *testing.T) {
+	dir := t.TempDir()
+
+	payload := filepath.Join(dir, "myagent.exe")
+	if err := os.WriteFile(payload, []byte("fake"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	emitDir := filepath.Join(dir, "emit")
+	m := &model.MSI{
+		CodePage: 1251,
+		Product: model.Product{
+			Name:         "CPTest",
+			Version:      "1.0.0",
+			Manufacturer: "Test",
+			ProductCode:  "{cccccccc-cccc-cccc-cccc-cccccccccccc}",
+		},
+		Install: model.Install{Directory: "CPTest"},
+		Files: []model.File{
+			{Source: payload, Destination: "myagent.exe"},
+		},
+		Parameters: []model.Parameter{
+			{Name: "name", Property: "NAME", Default: "Тест"},
+		},
+	}
+
+	w := &Writer{EmitDir: emitDir}
+	if err := w.Write(m, "out.msi"); err != nil {
+		t.Fatal(err)
+	}
+
+	// Verify _ForceCodepage.idt exists with correct content.
+	fcpData, err := os.ReadFile(filepath.Join(emitDir, "_ForceCodepage.idt"))
+	if err != nil {
+		t.Fatalf("missing _ForceCodepage.idt: %v", err)
+	}
+	wantFCP := []byte{0x0D, 0x0A, 0x0D, 0x0A} // \r\n\r\n
+	wantFCP = append(wantFCP, []byte("1251\t_ForceCodepage\r\n")...)
+	if !bytes.Equal(fcpData, wantFCP) {
+		t.Errorf("_ForceCodepage.idt: got %q, want %q", fcpData, wantFCP)
+	}
+
+	// Verify no other .idt has a row-3 prefix (no stray codepage on row 3).
+	for _, tableName := range []string{"Property", "Directory", "Component"} {
+		data, err := os.ReadFile(filepath.Join(emitDir, tableName+".idt"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		rows := bytes.Split(data, []byte{0x0D, 0x0A})
+		if len(rows) >= 3 {
+			third := string(rows[2])
+			if len(third) > 0 && third[0] >= '0' && third[0] <= '9' && third[0] != '\t' {
+				t.Errorf("%s.idt row 3 starts with a digit %q — possible stale codepage prefix", tableName, third)
+			}
 		}
 	}
 }

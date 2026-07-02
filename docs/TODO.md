@@ -69,21 +69,20 @@
 - [x] Document limitation: only `{{.PROPERTY}}` substitution supported, no `range`/`if`
 - [x] Tests: golden IDT for CustomAction/Binary/Sequence; golden VBScript; translate/reject unit tests; emit + full-build (Linux) writer tests
 
-## Known issues
+## Known issues — fixed
 
-- [ ] **Codepage + msibuild import incompatibility (Phase 1 regression)**: gomsi prefixes the codepage on IDT row 3 (e.g. `1251\tBinary\tName`), but msitools' `libmsi` does not strip it — it treats row 3's first field as the table name. msitools instead uses a separate `_ForceCodepage.idt`. Fix: emit `_ForceCodepage.idt` via the writer when `codepage≠0`, drop the row‑3 codepage prefix in `table.go`. Currently any full build with `codepage≠0` breaks at msibuild; golden‑file and e2e tests use `CodePage=0`.
+- [x] **Codepage + msibuild import incompatibility**: Row‑3 codepage prefix dropped in `table.go`, `_ForceCodepage.idt` emitted by the writer when `codepage≠0`. Both explicit and auto‑detected codepages now pass correctly through msibuild.
 
 ## Phase 7 — Auto-UI
 
-- [ ] `tables_ui.go`:
-  - `TextStyle` — standard UI font
-  - `Property` — DefaultUIFont, ButtonText_Next, ButtonText_Back, ButtonText_Finish, ButtonText_Cancel, etc.
-  - `Dialog` — WelcomeDlg, ParametersDlg, VerifyReadyDlg, ProgressDlg, ExitDlg
-  - `Control` — per dialog: BannerBitmap, Next/Back/Cancel/Finish buttons + per-parameter Edit control (password type → masked attr)
-  - `ControlCondition` — show/hide based on parameter.ui/required
-  - `ControlEvent` — EndDialog, NewDialog linking the wizard flow
-  - `InstallUISequence` — WelcomeDlg → ParametersDlg → VerifyReadyDlg → ExecuteAction
-- [ ] Tests: golden IDT per table group
+- [x] `tables_ui.go`:
+  - `TextStyle` — standard UI font (DlgFont8, Verdana)
+  - `Property` — DefaultUIFont, ButtonText_Next, ButtonText_Back, ButtonText_Finish, ButtonText_Cancel (appended via `applyUIProperties`)
+  - `Dialog` — WelcomeDlg, ParametersDlg, VerifyReadyDlg, ExitDlg (text‑only, no banner bitmaps; ProgressDlg skipped → built‑in progress)
+  - `Control` — per dialog: Text/Line/PushButton/Edit controls; per‑parameter Edit (password type → `0x00200000` masked attr)
+  - `ControlEvent` — EndDialog, NewDialog linking the wizard flow (WelcomeDlg → ParametersDlg → VerifyReadyDlg → execute; ExitDlg on finish)
+  - `InstallUISequence` — WelcomeDlg (50), ExecuteAction (1299), ExitDlg (1300) via `applyUISequence`
+- [x] Tests: golden IDT per table group; unit tests for hasVisibleParam, applyUIProperties, applyUISequence; writer emit + full‑build (Linux) tests
 
 ## Phase 8 — CI + docs
 

@@ -105,12 +105,12 @@ func (t *Table) Render() ([]byte, error) {
 	}
 	buf.WriteString("\r\n")
 
-	// ── Row 3: [code-page] table-name [PK columns] ──
-	if cp > 0 {
-		fmt.Fprintf(&buf, "%d\t%s", cp, t.Name)
-	} else {
-		buf.WriteString(t.Name)
-	}
+	// ── Row 3: table-name [PK columns] ──
+	// NOTE: the code-page declaration was historically prefixed here, but
+	// msitools' libmsi does not strip it — it treats the first field as the
+	// table name, causing import failure. The codepage is now set via a
+	// separate _ForceCodepage.idt file emitted by the writer.
+	buf.WriteString(t.Name)
 	for _, col := range t.Columns {
 		if col.PK {
 			fmt.Fprintf(&buf, "\t%s", col.Name)

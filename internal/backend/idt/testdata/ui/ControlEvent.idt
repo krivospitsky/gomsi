@@ -1,0 +1,12 @@
+Dialog_	Control_	Event	Argument	Condition	Ordering
+s72	s50	S128	S255	S255	I2
+ControlEvent	Dialog_	Control_	Event
+WelcomeDlg	NextBtn	NewDialog	ParametersDlg	1	1
+WelcomeDlg	CancelBtn	EndDialog	Exit	1	1
+ParametersDlg	BackBtn	NewDialog	WelcomeDlg	1	1
+ParametersDlg	NextBtn	NewDialog	VerifyReadyDlg	1	1
+ParametersDlg	CancelBtn	EndDialog	Exit	1	1
+VerifyReadyDlg	BackBtn	NewDialog	ParametersDlg	1	1
+VerifyReadyDlg	NextBtn	EndDialog	Return	1	1
+VerifyReadyDlg	CancelBtn	EndDialog	Exit	1	1
+ExitDlg	FinishBtn	EndDialog	Exit	1	1

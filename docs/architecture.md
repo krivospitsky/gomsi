@@ -63,11 +63,10 @@ msibuild <package.msi> \
   -i Upgrade.idt \
   -i CustomAction.idt \
   -i Binary.idt \
+  -i TextStyle.idt \
   -i Dialog.idt \
   -i Control.idt \
-  -i ControlCondition.idt \
   -i ControlEvent.idt \
-  -i TextStyle.idt \
   -a gomsi.cab tmp/gomsi.cab \
   -s "<ProductName>" "<Manufacturer>" ";1033" "{ProductCode}"
 ```
@@ -89,7 +88,7 @@ The manifest accepts an optional top-level `codepage` field (integer). 0 (or abs
 Per [MS docs](https://learn.microsoft.com/en-us/windows/win32/msi/archive-file-format):
 - Row 1: column names, tab-separated
 - Row 2: column type defs, tab-separated — lowercase = non-nullable, uppercase = nullable; `s`/`S` string, `l`/`L` localizable, `v`/`V` binary, `i`/`I` integer; followed by max chars
-- Row 3 (ASCII only): table name + primary key columns, tab-separated
+- Row 3: table name + primary key columns, tab-separated (codepage is set via a separate `_ForceCodepage.idt`)
 - Rows 4+: data rows
 - Control character escaping: NULL→21, BS→27, HT→16, LF→25, FF→24, CR→17
 - Line ending: `\r\n`
@@ -112,11 +111,11 @@ Per [MS docs](https://learn.microsoft.com/en-us/windows/win32/msi/archive-file-f
 | Upgrade | Major upgrade detection | `model.Product.UpgradeCode` |
 | CustomAction | Immediate/deferred CAs | Generated (VBScript config) |
 | Binary | Stored VBScript bytes | Generated |
+| TextStyle | Font definitions | Standard |
 | Dialog | UI dialogs | Auto-generated from `model.Parameter` |
 | Control | UI controls inside dialogs | Auto-generated from `model.Parameter` |
-| ControlCondition | Show/hide control rules | Based on `ui`/`required` |
 | ControlEvent | Button → next dialog / end | Standard wizard structure |
-| TextStyle | Font definitions | Standard |
+| _ForceCodepage | String-table codepage declaration | Emitted when `codepage≠0` |
 
 ## Config CA design
 
@@ -132,21 +131,19 @@ Config rendering at install time uses a **VBScript CustomAction**:
 ## Auto-UI dialog flow
 
 ```
-Welcome  →  Parameters  →  Ready to Install  →  (ExecuteAction)  →  Success
+Welcome  →  Parameters  →  Ready to Install  →  (ExecuteAction + built-in progress)  →  Exit
 ```
 
-- **WelcomeDlg**: branding banner + Next/Cancel buttons
-- **ParametersDlg**: one Edit control per parameter (password type → masked), BannerBitmap + Back/Next/Cancel
-- **VerifyReadyDlg**: Install description + Back/Next/Cancel → ExecuteAction
-- **ProgressDlg**: progress bar during install
-- **ExitDlg**: success/failure + Finish button
+- **WelcomeDlg**: title + description + Next/Cancel buttons
+- **ParametersDlg**: one Edit control per visible parameter (`ui != "never"`), password type → masked input attribute, Back/Next/Cancel
+- **VerifyReadyDlg**: "Ready to install" + Back/Next/Cancel → `EndDialog Return` triggers `ExecuteAction`
+- **ExitDlg**: "Installed successfully" + Finish button (EndDialog Exit)
+- Progress is shown by the built‑in MSI action dialog during `ExecuteAction` (no custom ProgressDlg)
 
-Rules:
-- `required=true` → shown (may also highlight but no client-side blocking in MVP)
-- `ui: always` → always show parameters even if defaulted
-- `ui: never` → omit control entirely (CLI-only parameter)
-- `type=password` → masked input control attribute
-- `default != ""` → prefilled in the control
+Gating:
+- UI tables are emitted only when at least one parameter has `ui != "never"` (empty/missing = "auto" = visible)
+- `ui: never` → control omitted entirely (CLI-only parameter, still settable via `msiexec`)
+- `type=password` → masked input (`msidbControlAttributesPasswordInput = 0x00200000`)
 
 ## Deterministic builds
 

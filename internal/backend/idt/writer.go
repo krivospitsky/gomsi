@@ -46,6 +46,21 @@ func (w *Writer) Write(m *model.MSI, outputPath string) error {
 	tables = append(tables, upgradeTables(m)...)
 	tables = append(tables, configTables(m)...)
 
+	// Phase 7: Auto-UI. Emit UI tables when the model has visible parameters.
+	if hasVisibleParam(m) {
+		uiTbls := uiTables(m)
+		tables = append(tables, uiTbls...)
+		applyUIProperties(findTable(tables, "Property"), m)
+		applyUISequence(findTable(tables, "InstallUISequence"), m)
+	}
+
+	// Determine build-wide codepage. If non-zero, emit _ForceCodepage.idt to
+	// tell libmsi the string-table codepage before importing the other tables.
+	buildCP, err := effectiveBuildCodePage(tables)
+	if err != nil {
+		return fmt.Errorf("determine codepage: %w", err)
+	}
+
 	var tablePaths []string
 	for _, tbl := range tables {
 		p := filepath.Join(tempDir, tbl.Name+".idt")
@@ -53,6 +68,17 @@ func (w *Writer) Write(m *model.MSI, outputPath string) error {
 			return fmt.Errorf("write %s.idt: %w", tbl.Name, err)
 		}
 		tablePaths = append(tablePaths, p)
+	}
+
+	// _ForceCodepage.idt must be imported first so libmsi can correctly
+	// decode bytes in subsequent tables.
+	if buildCP > 0 {
+		p := filepath.Join(tempDir, "_ForceCodepage.idt")
+		content := fmt.Sprintf("\r\n\r\n%d\t_ForceCodepage\r\n", buildCP)
+		if err := os.WriteFile(p, []byte(content), 0644); err != nil {
+			return fmt.Errorf("write _ForceCodepage.idt: %w", err)
+		}
+		tablePaths = append([]string{p}, tablePaths...)
 	}
 
 	// If config is defined, generate the VBScript CA and write the stream
@@ -94,6 +120,39 @@ func (w *Writer) Write(m *model.MSI, outputPath string) error {
 		return fmt.Errorf("msibuild: %w", err)
 	}
 
+	return nil
+}
+
+// effectiveBuildCodePage returns the single non-zero codepage to use for the
+// _ForceCodepage.idt across all tables. It returns 0 if every table is pure
+// ASCII (no non-zero effective codepage). It errors if two different non-zero
+// codepages are found (e.g. one table auto-detects 1251 and another 1252).
+func effectiveBuildCodePage(tables []*Table) (int, error) {
+	cp := 0
+	for _, t := range tables {
+		tcp, err := t.effectiveCodePage()
+		if err != nil {
+			return 0, fmt.Errorf("table %q: %w", t.Name, err)
+		}
+		if tcp == 0 {
+			continue
+		}
+		if cp == 0 {
+			cp = tcp
+		} else if tcp != cp {
+			return 0, fmt.Errorf("conflicting codepages across tables: %d and %d", cp, tcp)
+		}
+	}
+	return cp, nil
+}
+
+// findTable returns the table with the given name from the slice, or nil.
+func findTable(tables []*Table, name string) *Table {
+	for _, t := range tables {
+		if t.Name == name {
+			return t
+		}
+	}
 	return nil
 }
 
