@@ -6,7 +6,6 @@ ProductVersion	1.2.3
 Manufacturer	Acme
 ProductLanguage	1033
 ProductCode	{22222222-2222-2222-2222-222222222222}
-UpgradeCode	{11111111-1111-1111-1111-111111111111}
 SERVERURL	
 TOKEN	s3cr3t
 SecureCustomProperties	SERVERURL;TOKEN

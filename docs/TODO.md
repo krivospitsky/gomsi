@@ -46,11 +46,11 @@
 
 ## Phase 5 — Major upgrade / auto-uninstall
 
-- [ ] `tables_upgrade.go`:
-  - `Upgrade` — row per upgrade detection: UpgradeCode(Product), VersionMin=0, VersionMax=current, Attributes=has-rom+has-rrp, ActionProperty=OLDPRODUCTSFOUND
+- [x] `tables_upgrade.go`:
+  - `Upgrade` — row per upgrade detection: UpgradeCode(Product), VersionMin=0, VersionMax=current, Attributes=0 (OnlyDetect off → removal enabled), ActionProperty=OLDPRODUCTSFOUND
   - `Property["SecureCustomProperties"]` append OLDPRODUCTSFOUND
   - `FindRelatedProducts` and `RemoveExistingProducts` in InstallExecuteSequence (RemoveExistingProducts after InstallInitialize)
-- [ ] Tests: golden IDT
+- [x] Tests: golden IDT
 
 ## Phase 6 — Config via VBScript CA
 

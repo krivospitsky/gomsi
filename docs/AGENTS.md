@@ -4,7 +4,7 @@ Guidance for OpenCode agents working in this repository.
 
 ## Status
 
-Phases 2–4 of the IDT backend are complete. Phase 2 delivered core tables (Property, Directory, Component, Feature, FeatureComponents, File, Media, InstallExecuteSequence, InstallUISequence), CAB generation via lcab, msibuild invocation, and writer orchestration. Phase 3 adds ServiceInstall, ServiceControl, and augments InstallExecuteSequence with StopServices/DeleteServices/InstallServices. Phase 4 adds parameter Property rows and populates SecureCustomProperties. The remaining phases (upgrade, VBScript CA, auto-UI) are pending. See [`TODO.md`](TODO.md) for the full plan. The following resolved design decisions apply:
+Phases 2–5 of the IDT backend are complete. Phase 2 delivered core tables (Property, Directory, Component, Feature, FeatureComponents, File, Media, InstallExecuteSequence, InstallUISequence), CAB generation via lcab, msibuild invocation, and writer orchestration. Phase 3 adds ServiceInstall, ServiceControl, and augments InstallExecuteSequence with StopServices/DeleteServices/InstallServices. Phase 4 adds parameter Property rows and populates SecureCustomProperties. Phase 5 adds the Upgrade table, appends OLDPRODUCTSFOUND to SecureCustomProperties, and inserts FindRelatedProducts/RemoveExistingProducts into InstallExecuteSequence for automatic major-upgrade uninstall. The remaining phases (VBScript CA, auto-UI) are pending. See [`TODO.md`](TODO.md) for the full plan. The following resolved design decisions apply:
 
 | Decision | Choice |
 |----------|--------|

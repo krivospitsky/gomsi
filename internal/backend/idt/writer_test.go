@@ -47,6 +47,7 @@ func TestWriter_Emit(t *testing.T) {
 		"Property.idt", "Directory.idt", "Component.idt",
 		"Feature.idt", "FeatureComponents.idt", "File.idt",
 		"Media.idt", "InstallExecuteSequence.idt", "InstallUISequence.idt",
+		"Upgrade.idt",
 	}
 	for _, name := range expectedIDT {
 		p := filepath.Join(emitDir, name)
@@ -115,6 +116,7 @@ func TestWriter_Emit_WithService(t *testing.T) {
 		"Feature.idt", "FeatureComponents.idt", "File.idt",
 		"Media.idt", "InstallExecuteSequence.idt", "InstallUISequence.idt",
 		"ServiceInstall.idt", "ServiceControl.idt",
+		"Upgrade.idt",
 	}
 	for _, name := range expectedIDT {
 		p := filepath.Join(emitDir, name)
@@ -128,7 +130,7 @@ func TestWriter_Emit_WithService(t *testing.T) {
 		}
 	}
 
-	// Verify the service InstallExecuteSequence has the expected number of rows.
+	// Verify the service + upgrade InstallExecuteSequence has the expected number of rows.
 	seqPath := filepath.Join(emitDir, "InstallExecuteSequence.idt")
 	data, err := os.ReadFile(seqPath)
 	if err != nil {
@@ -140,10 +142,10 @@ func TestWriter_Emit_WithService(t *testing.T) {
 			lines++
 		}
 	}
-	// Header + PK row + 3 header rows? Actually IDT has col names (line1),
-	// col types (line2), PK (line3), then 14 data rows = 17 total lines.
-	if lines != 17 {
-		t.Errorf("InstallExecuteSequence.idt: got %d lines, want 17 (3 header + 14 data)", lines)
+	// IDT: col names (line1), col types (line2), PK (line3), then 16 data rows
+	// (14 core+service + 2 upgrade) = 19 total lines.
+	if lines != 19 {
+		t.Errorf("InstallExecuteSequence.idt: got %d lines, want 19 (3 header + 16 data)", lines)
 	}
 }
 
@@ -193,6 +195,11 @@ func TestWriter_Emit_WithParameters(t *testing.T) {
 	}
 	if !strings.Contains(propStr, "SecureCustomProperties\tSERVERURL;TOKEN") {
 		t.Error("Property.idt missing or incorrect SecureCustomProperties row")
+	}
+
+	// Verify Upgrade.idt is emitted when UpgradeCode is present.
+	if _, err := os.Stat(filepath.Join(emitDir, "Upgrade.idt")); err != nil {
+		t.Errorf("missing Upgrade.idt: %v", err)
 	}
 }
 

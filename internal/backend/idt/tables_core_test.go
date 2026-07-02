@@ -17,7 +17,7 @@ func testModel() *model.MSI {
 			Name:         "MyAgent",
 			Version:      "1.2.3",
 			Manufacturer: "Acme",
-			UpgradeCode:  "{11111111-1111-1111-1111-111111111111}",
+			UpgradeCode:  "",
 			ProductCode:  "{22222222-2222-2222-2222-222222222222}",
 		},
 		Install: model.Install{Directory: "MyAgent"},

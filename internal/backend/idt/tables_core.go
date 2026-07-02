@@ -62,9 +62,12 @@ func buildProperty(m *model.MSI) *Table {
 		secureProps = append(secureProps, p.Property)
 	}
 
-	// SecureCustomProperties tells the installer which public properties
-	// to pass to the deferred/machine context (e.g. for VBScript CAs).
-	// Future phases (upgrade) may append to this list.
+	// Phase 5: append the upgrade action property so RemoveExistingProducts
+	// can see it in the deferred/machine context.
+	if m.Product.UpgradeCode != "" {
+		secureProps = append(secureProps, "OLDPRODUCTSFOUND")
+	}
+
 	addProp("SecureCustomProperties", strings.Join(secureProps, ";"))
 
 	return tbl
@@ -233,9 +236,40 @@ func buildInstallExecuteSequence(m *model.MSI) *Table {
 		{"FileCost", "", 2},
 		{"CostFinalize", "", 3},
 		{"InstallValidate", "", 10},
-		{"InstallInitialize", "", 50},
-		{"ProcessComponents", "", 60},
 	}
+
+	// Phase 5: detect older products for major upgrade.
+	if m.Product.UpgradeCode != "" {
+		entries = append(entries, struct {
+			action    string
+			condition string
+			sequence  int
+		}{"FindRelatedProducts", "", 25})
+	}
+
+	entries = append(entries, []struct {
+		action    string
+		condition string
+		sequence  int
+	}{
+		{"InstallInitialize", "", 50},
+	}...)
+
+	if m.Product.UpgradeCode != "" {
+		entries = append(entries, struct {
+			action    string
+			condition string
+			sequence  int
+		}{"RemoveExistingProducts", "", 55})
+	}
+
+	entries = append(entries, []struct {
+		action    string
+		condition string
+		sequence  int
+	}{
+		{"ProcessComponents", "", 60},
+	}...)
 
 	// Service actions: stop and delete before InstallFiles (to free the
 	// running binary), install after InstallFiles.

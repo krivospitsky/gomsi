@@ -43,6 +43,7 @@ func (w *Writer) Write(m *model.MSI, outputPath string) error {
 
 	tables := coreTables(m)
 	tables = append(tables, serviceTables(m)...)
+	tables = append(tables, upgradeTables(m)...)
 
 	var tablePaths []string
 	for _, tbl := range tables {
