@@ -24,7 +24,7 @@ builds:
 nfpms:
   - id: gomsi
     package_name: gomsi
-    builds:
+    ids:
       - gomsi
     formats:
       - deb
@@ -42,25 +42,30 @@ nfpms:
     bindir: /usr/bin
     file_name_template: "{{ .ConventionalFileName }}"
 
-dockers:
+dockers_v2:
   - id: gomsi
     dockerfile: Dockerfile
-    image_templates:
-      - "krivospitsky/gomsi:{{ .Tag }}"
-      - "krivospitsky/gomsi:v{{ .Major }}"
-      - "krivospitsky/gomsi:v{{ .Major }}.{{ .Minor }}"
-      - "krivospitsky/gomsi:latest"
-    use: docker
-    build_flag_templates:
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.name={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source={{.GitURL}}"
+    ids:
+      - gomsi
+    images:
+      - "krivospitsky/gomsi"
+    tags:
+      - "{{ .Tag }}"
+      - "v{{ .Major }}"
+      - "v{{ .Major }}.{{ .Minor }}"
+      - latest
+    platforms:
+      - linux/amd64
+    labels:
+      "org.opencontainers.image.created": "{{.Date}}"
+      "org.opencontainers.image.name": "{{.ProjectName}}"
+      "org.opencontainers.image.revision": "{{.FullCommit}}"
+      "org.opencontainers.image.version": "{{.Version}}"
+      "org.opencontainers.image.source": "{{.GitURL}}"
 
 archives:
   - id: gomsi
-    builds:
+    ids:
       - gomsi
     name_template: "gomsi_{{ .Version }}_linux_amd64"
     formats:
@@ -70,7 +75,7 @@ checksum:
   name_template: "checksums.txt"
 
 snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+  version_template: "{{ incpatch .Version }}-next"
 
 changelog:
   sort: asc
