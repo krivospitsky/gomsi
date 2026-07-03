@@ -367,12 +367,20 @@ The `V0` column type is a binary‑object reference. On import, msibuild reads t
 | Column | Type | PK |
 |---|---|---|
 | UpgradeCode | `s38` | Yes |
-| VersionMin | `S255` | No |
-| VersionMax | `S255` | No |
-| Language | `S255` | No |
-| Attributes | `i4` | No |
-| Remove | `S1` | No |
-| ActionProperty | `S72` | No |
+| VersionMin | `S20` | No |
+| VersionMax | `S20` | No |
+| Language | `S20` | No |
+| Attributes | `i2` | No |
+| Remove | `S255` | No |
+| ActionProperty | `s72` | Yes |
+
+> **msibuild/libmsi limitation**: The standard MSI Upgrade table has 5 PKs
+> (UpgradeCode, VersionMin, VersionMax, Language, ActionProperty). However,
+> libmsi has a bug where tables with 2+ PK columns silently fail record
+> insertion when any non-PK nullable column has a NULL value. gomsi works
+> around this by (a) keeping only UpgradeCode + ActionProperty as PKs, and
+> (b) setting `VersionMin="0"` instead of NULL ("0" = match all versions ≥ 0,
+> equivalent to the standard "no lower bound" semantics).
 
 Attributes bitmask:
 - 1 = Migrate features (move to new product)

@@ -119,7 +119,7 @@ Future phases may switch to `libmsi` or a pure-Go MSI writer.
 
 ## Status
 
-Phases 1–7 complete: core tables, service tables, parameters, upgrade/uninstall, VBScript config CA, and auto-generated UI wizards (TextStyle/Dialog/Control/ControlEvent) — gated on visible parameters. Phase 8 (CI + release) is the sole remaining phase. See [`docs/TODO.md`](docs/TODO.md) for details and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for architecture documentation.
+All phases complete: core tables, service tables, parameters, upgrade/uninstall, VBScript config CA, auto-generated UI wizards, and CI/release (GitHub Actions + goreleaser deb/rpm/Docker). See [`docs/TODO.md`](docs/TODO.md) for details and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for architecture documentation.
 
 ## Non-goals
 

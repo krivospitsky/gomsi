@@ -25,6 +25,23 @@
    go run ./cmd/gomsi build internal/manifest/testdata/installer.yaml --emit out/
    ```
    This writes all `.idt` files to `out/` without calling msibuild. On Linux the CAB is also emitted; on Windows it's skipped gracefully. Inspect the IDT files and diff them with golden files (`testdata/*.idt` and `testdata/core/*.idt`).
+
+### Windows (WSL — full MSI build)
+
+Requires WSL with Ubuntu 22.04+ and `msitools` + `gcab` installed:
+
+```sh
+sudo apt update && sudo apt install msitools gcab
+```
+
+Run the helper script from PowerShell:
+
+```powershell
+.\scripts\build-wsl.ps1 -Manifest internal/manifest/testdata/installer.yaml
+```
+
+The script cross‑compiles `gomsi` for Linux, copies it into WSL, runs the full build (gcab + msibuild), and copies the resulting `.msi` back to the working directory.
+
 4. Run the full Go suite:
    ```
    go build ./... && go vet ./... && go test ./...

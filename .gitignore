@@ -7,6 +7,9 @@
 !**/testdata/**/*.idt
 *.cab
 
+# Build output
+/out/
+
 # Go build/test artifacts
 *.test
 *.out

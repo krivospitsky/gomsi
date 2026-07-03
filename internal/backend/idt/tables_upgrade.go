@@ -32,7 +32,7 @@ func buildUpgrade(m *model.MSI) *Table {
 
 	tbl.AddRow(
 		m.Product.UpgradeCode, // UpgradeCode
-		"",                    // VersionMin  (null → detect all previous)
+		"0",                   // VersionMin  ("0" = match all versions >= 0; null breaks msibuild with multi-PK tables)
 		m.Product.Version,     // VersionMax  (current product version)
 		"",                    // Language    (null → all languages)
 		"0",                   // Attributes  (OnlyDetect off → removal enabled)
