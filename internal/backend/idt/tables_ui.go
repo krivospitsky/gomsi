@@ -145,7 +145,7 @@ func buildControl(m *model.MSI) *Table {
 			{Name: "Y", Type: I2()},
 			{Name: "Width", Type: I2()},
 			{Name: "Height", Type: I2()},
-			{Name: "Attributes", Type: NI2()},
+			{Name: "Attributes", Type: NI4()},
 			{Name: "Property", Type: NStr(50)},
 			{Name: "Text", Type: NStr(0)},
 			{Name: "Control_Next", Type: NStr(50)},

@@ -1,4 +1,4 @@
 UpgradeCode	VersionMin	VersionMax	Language	Attributes	Remove	ActionProperty
-s38	S20	S20	S20	i2	S255	s72
+s38	s20	s20	s20	i2	S255	s72
 Upgrade	UpgradeCode	VersionMin	VersionMax	Language	ActionProperty
 {11111111-1111-1111-1111-111111111111}		1.2.3		0		OLDPRODUCTSFOUND

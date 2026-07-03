@@ -1,5 +1,5 @@
 Dialog_	Control	Type	X	Y	Width	Height	Attributes	Property	Text	Control_Next	Help
-s72	s50	s50	i2	i2	i2	i2	I2	S50	S0	S50	S0
+s72	s50	s50	i2	i2	i2	i2	I4	S50	S0	S50	S0
 Control	Dialog_	Control
 WelcomeDlg	Title	Text	20	10	330	20	65539		[DefaultUIFont]Welcome to [ProductName] Setup	Body	
 WelcomeDlg	Body	Text	20	35	330	195	65539		[DefaultUIFont]This wizard will install [ProductName] on your computer. Click Next to continue or Cancel to exit.	BottomLine	
