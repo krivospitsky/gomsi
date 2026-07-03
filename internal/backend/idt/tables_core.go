@@ -173,7 +173,7 @@ func buildFile(m *model.MSI) *Table {
 			{Name: "FileSize", Type: I4()},
 			{Name: "Version", Type: NStr(72)},
 			{Name: "Language", Type: NStr(20)},
-			{Name: "Attributes", Type: I4()},
+			{Name: "Attributes", Type: I2()},
 			{Name: "Sequence", Type: I2()},
 		},
 	}

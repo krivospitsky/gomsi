@@ -24,7 +24,7 @@ func buildUpgrade(m *model.MSI) *Table {
 			{Name: "VersionMin", Type: NStr(20), PK: true},
 			{Name: "VersionMax", Type: NStr(20), PK: true},
 			{Name: "Language", Type: NStr(20), PK: true},
-			{Name: "Attributes", Type: I4()},
+			{Name: "Attributes", Type: I2()},
 			{Name: "Remove", Type: NStr(255)},
 			{Name: "ActionProperty", Type: Str(72), PK: true},
 		},

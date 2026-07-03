@@ -1,0 +1,5 @@
+# IDT files use CRLF line endings (required by the IDT archive format).
+*.idt text eol=crlf
+
+# VBScript golden files must match buildVBScript output (LF line endings).
+*.vbs text eol=lf

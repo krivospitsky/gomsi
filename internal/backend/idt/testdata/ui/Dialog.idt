@@ -1,5 +1,5 @@
 Dialog	HCentering	VCentering	Width	Height	Attributes	Title	Control_First	Control_Default	Control_Cancel
-s72	i2	i2	i2	i2	I4	S128	s72	S72	S72
+s72	i2	i2	i2	i2	i2	S128	s72	S72	S72
 Dialog	Dialog
 WelcomeDlg	50	50	370	270	3	[ProductName] Setup	Title	NextBtn	CancelBtn
 ParametersDlg	50	50	370	270	3	[ProductName] Setup	Title	NextBtn	CancelBtn
